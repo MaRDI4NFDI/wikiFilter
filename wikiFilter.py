@@ -35,7 +35,6 @@ def split_xml(filename, splitsize, dir, tags, template, keywords):
         header += line.decode('utf-8')  # decode the bytes to string
         if '</siteinfo>' in header:
             break
-    print(header)
     chunkfile.write(header.encode('utf-8'))  # write as bytes
 
     # And the rest
