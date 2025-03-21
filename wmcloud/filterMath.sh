@@ -5,7 +5,7 @@ SOURCE_DIR="/data/project/wdump/links/latest"
 OUTPUT_DIR="/data/project/wdump/math"
 
 # Path to the wikiFilter script
-WIKI_FILTER_SCRIPT="~/wikiFilter/wikiFilter.py"
+WIKI_FILTER_SCRIPT="$HOME/wikiFilter/wikiFilter.py"
 
 # Chunk size: 10 million articles
 SPLITSIZE=10000000
@@ -21,7 +21,7 @@ for symlink in "$SOURCE_DIR"/*; do
         base_filename=$(basename "$actual_file" | cut -d '-' -f 1)
 
         # Apply the wikiFilter script with the chunk size
-        python3 "$WIKI_FILTER_SCRIPT" -f "$actual_file" -s "$SPLITSIZE" -d "$OUTPUT_DIR"
+        $WIKI_FILTER_SCRIPT -f "$symlink" -s "$SPLITSIZE" -d "$OUTPUT_DIR"
 
         # Rename the chunk files created by wikiFilter.py
         chunk_count=1  # Start with chunk 1
