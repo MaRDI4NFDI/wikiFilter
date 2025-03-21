@@ -75,8 +75,12 @@ def split_xml(filename, splitsize, dir, tags, template, keywords):
             chunkfile.write(header.encode('utf-8'))  # write as bytes
 
     try:
-        chunkfile.write(footer.encode('utf-8'))  # write as bytes
-        chunkfile.close()
+        if pagecount > 0:
+            chunkfile.write(footer.encode('utf-8'))  # write as bytes
+            chunkfile.close()
+        else:
+            chunkfile.close()
+            os.remove(chunkname(filecount))
     except Exception as e:
         print('Error:', e)
 
