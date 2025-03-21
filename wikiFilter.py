@@ -25,7 +25,10 @@ def split_xml(filename, splitsize, dir, tags, template, keywords):
     # Read line by line
     bzfile = bz2.BZ2File(filename)
     tags = tags.split(',')
-    keywords = keywords.split(',')
+    if keywords:
+        keywords = keywords.split(',')
+    else:
+        keywords = []
 
     # The header
     for line in bzfile:
