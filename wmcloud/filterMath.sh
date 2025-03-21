@@ -10,6 +10,9 @@ WIKI_FILTER_SCRIPT="$HOME/wikiFilter/wikiFilter.py"
 # Chunk size: 10 million articles
 SPLITSIZE=10000000
 
+# set the nullglob option so that a pattern that matches nothing
+shopt -s nullglob
+
 # Loop through all the files in /data/project/wdump/links/latest/
 for symlink in "$SOURCE_DIR"/*; do
     # Check if it is a symbolic link
@@ -24,8 +27,7 @@ for symlink in "$SOURCE_DIR"/*; do
         $WIKI_FILTER_SCRIPT -f "$symlink" -s "$SPLITSIZE" -d "$OUTPUT_DIR"
 
         # Rename the chunk files created by wikiFilter.py
-        chunk_count=1  # Start with chunk 1
-        for chunkfile in "$OUTPUT_DIR"/*-*.xml.bz2; do
+        for chunkfile in "$OUTPUT_DIR"/chunk-*.xml.bz2; do
             # Extract the number from the chunk file name
             chunk_number=$(basename "$chunkfile" | cut -d '-' -f 2 | cut -d '.' -f 1)
 
