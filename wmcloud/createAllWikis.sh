@@ -12,10 +12,14 @@ if [ ! -d "$DIR" ]; then
     exit 1
 fi
 
+DOP=4
+(
 # Loop through all files in the specified directory
 for lang in "$DIR"/*; do
         [[ -d $lang ]] && continue
+        ((i=i%DOP)); ((i++==0)) && wait
         # echo "processing wiki $lang"
         filename="${lang##*/}" 
-        ./createWiki $lang 2>&1 > ./log/$filename.log || echo "Error importing $lang"
+        (./createWiki $lang 2>&1 > ./log/$filename.log || echo "Error importing $lang")&
 done
+)
