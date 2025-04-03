@@ -1,0 +1,5 @@
+#!/bin/bash
+
+fbname=$(basename "$1" | cut -d. -f1)
+echo Creating $fbname
+/var/www/html/w/maintenance/run installPreConfigured --wiki $fbname
