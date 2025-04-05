@@ -20,6 +20,6 @@ for lang in "$DIR"/*; do
         ((i=i%DOP)); ((i++==0)) && wait -n
         echo "processing wiki $lang"
         filename="${lang##*/}" 
-        (./createWiki $lang 2>&1 > ./log/$filename.log || echo "Error importing $lang")&
+        (./createWiki $lang &> ./log/$filename.log || echo "Error importing $lang")&
 done
 )
