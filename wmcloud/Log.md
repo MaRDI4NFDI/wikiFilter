@@ -1,3 +1,80 @@
+## 2025-12-05
+<details>
+
+<summary>Run updateLinks </summary>
+
+run https://github.com/MaRDI4NFDI/wikiFilter/blob/master/wmcloud/updateLinks.sh for 1093 files with the following problems
+
+
+
+```
+No 'latest' folder found in /public/dumps/public/archive/
+No symbolic link found for bawiktionary-latest-pages-articles-multistream.xml.bz2 in /public/dumps/public/bawiktionary//latest
+No symbolic link found for chwikimedia-latest-pages-articles-multistream.xml.bz2 in /public/dumps/public/chwikimedia//latest
+No 'latest' folder found in /public/dumps/public/closed_zh_twwiki/
+No 'latest' folder found in /public/dumps/public/dkwiki/
+No 'latest' folder found in /public/dumps/public/dkwikibooks/
+No 'latest' folder found in /public/dumps/public/dkwiktionary/
+No symbolic link found for en_flaggedrevs_labswikimedia-latest-pages-articles-multistream.xml.bz2 in /public/dumps/public/en_flaggedrevs_labswikimedia//latest
+No 'latest' folder found in /public/dumps/public/ilwikimedia/
+No symbolic link found for ilwiktionary-latest-pages-articles-multistream.xml.bz2 in /public/dumps/public/ilwiktionary//latest
+No 'latest' folder found in /public/dumps/public/lbewiktionary/
+No 'latest' folder found in /public/dumps/public/lgwiktionary/
+No 'latest' folder found in /public/dumps/public/lijwiktionary/
+No 'latest' folder found in /public/dumps/public/map_bmswiktionary/
+No 'latest' folder found in /public/dumps/public/muswiktionary/
+No 'latest' folder found in /public/dumps/public/mznwiktionary/
+No 'latest' folder found in /public/dumps/public/napwiktionary/
+No 'latest' folder found in /public/dumps/public/nds_nlwiktionary/
+No 'latest' folder found in /public/dumps/public/newwiktionary/
+No 'latest' folder found in /public/dumps/public/ngwiktionary/
+No 'latest' folder found in /public/dumps/public/novwiktionary/
+No 'latest' folder found in /public/dumps/public/nrmwiktionary/
+No 'latest' folder found in /public/dumps/public/nvwiktionary/
+No 'latest' folder found in /public/dumps/public/nywiktionary/
+No 'latest' folder found in /public/dumps/public/oswiktionary/
+No 'latest' folder found in /public/dumps/public/other/
+No 'latest' folder found in /public/dumps/public/pagwiktionary/
+No 'latest' folder found in /public/dumps/public/pamwiktionary/
+No 'latest' folder found in /public/dumps/public/papwiktionary/
+No 'latest' folder found in /public/dumps/public/pdcwiktionary/
+No 'latest' folder found in /public/dumps/public/pihwiktionary/
+No 'latest' folder found in /public/dumps/public/pmswiktionary/
+No 'latest' folder found in /public/dumps/public/rmywiktionary/
+No 'latest' folder found in /public/dumps/public/roa_tarawiktionary/
+No 'latest' folder found in /public/dumps/public/ru_sibwiki/
+No 'latest' folder found in /public/dumps/public/ru_sibwiktionary/
+No 'latest' folder found in /public/dumps/public/scowiktionary/
+No 'latest' folder found in /public/dumps/public/sep11wiki/
+No 'latest' folder found in /public/dumps/public/sewiktionary/
+No symbolic link found for strategyappwiki-latest-pages-articles-multistream.xml.bz2 in /public/dumps/public/strategyappwiki//latest
+No 'latest' folder found in /public/dumps/public/testwiki¬/
+No 'latest' folder found in /public/dumps/public/tetwiktionary/
+No 'latest' folder found in /public/dumps/public/tlhwiki/
+No 'latest' folder found in /public/dumps/public/tlhwiktionary/
+No symbolic link found for tokiponawiki-latest-pages-articles-multistream.xml.bz2 in /public/dumps/public/tokiponawiki//latest
+No symbolic link found for tokiponawikibooks-latest-pages-articles-multistream.xml.bz2 in /public/dumps/public/tokiponawikibooks//latest
+No symbolic link found for tokiponawikiquote-latest-pages-articles-multistream.xml.bz2 in /public/dumps/public/tokiponawikiquote//latest
+No symbolic link found for tokiponawiktionary-latest-pages-articles-multistream.xml.bz2 in /public/dumps/public/tokiponawiktionary//latest
+No 'latest' folder found in /public/dumps/public/tumwiktionary/
+No 'latest' folder found in /public/dumps/public/tywiktionary/
+No 'latest' folder found in /public/dumps/public/udmwiktionary/
+No 'latest' folder found in /public/dumps/public/vewiktionary/
+No symbolic link found for viwikimedia-latest-pages-articles-multistream.xml.bz2 in /public/dumps/public/viwikimedia//latest
+No 'latest' folder found in /public/dumps/public/vlswiktionary/
+No 'latest' folder found in /public/dumps/public/warwiktionary/
+No 'latest' folder found in /public/dumps/public/wuuwiktionary/
+No 'latest' folder found in /public/dumps/public/xalwiktionary/
+No 'latest' folder found in /public/dumps/public/zeawiktionary/
+No 'latest' folder found in /public/dumps/public/zh_classicalwiktionary/
+No 'latest' folder found in /public/dumps/public/zh_min-nanwiki/
+No 'latest' folder found in /public/dumps/public/zh_min-nanwiktionary/
+No 'latest' folder found in /public/dumps/public/zh_yuewiktionary/
+```
+
+</details>
+
+
 ## 2025-04-06
 * Create DB backup
 ```bash
