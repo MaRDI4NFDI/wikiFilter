@@ -74,6 +74,14 @@ No 'latest' folder found in /public/dumps/public/zh_yuewiktionary/
 
 </details>
 
+<details>
+
+<summary>update hashes</summary>
+
+```
+physikerwelt@math24:~/wikiFilter/wmcloud$ ./getInputHash.sh > inputHashes.csv 
+```
+</details>
 
 ## 2025-04-06
 * Create DB backup
