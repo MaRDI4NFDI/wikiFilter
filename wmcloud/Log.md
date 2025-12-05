@@ -82,6 +82,18 @@ No 'latest' folder found in /public/dumps/public/zh_yuewiktionary/
 physikerwelt@math24:~/wikiFilter/wmcloud$ ./getInputHash.sh > inputHashes.csv 
 ```
 </details>
+<details>
+
+<summary>generate new dump</summary>
+
+```bash
+screen 
+physikerwelt@math24:~/wikiFilter$ mv /data/project/wdump/math /data/project/wdump/math25-03
+physikerwelt@math24:~/wikiFilter$ mkdir /data/project/wdump/math
+physikerwelt@math24:~/wikiFilter$ cd wmcloud/
+physikerwelt@math24:~/wikiFilter/wmcloud$ ./filterMath.sh 
+```
+</details>
 
 ## 2025-04-06
 * Create DB backup
