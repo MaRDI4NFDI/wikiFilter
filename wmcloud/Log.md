@@ -1,3 +1,16 @@
+## 2025-12-11
+<details>
+<summary>copy files and create tar file</summary>
+  
+```bash
+scp -r math24:/data/project/wdump/math .
+tar -cf math.tar math/*
+cd math
+ls | wc -l
+```
+output 656 files
+</details>
+
 ## 2025-12-05
 <details>
 
