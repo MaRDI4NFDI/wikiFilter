@@ -1,3 +1,6 @@
+## 2026-09-26
+* published [refresh plan](https://phabricator.wikimedia.org/T439313)
+
 ## 2025-12-11
 <details>
 <summary>copy files and create tar file</summary>
