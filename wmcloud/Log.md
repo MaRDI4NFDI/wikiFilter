@@ -1,6 +1,41 @@
 ## 2026-09-26
 * published [refresh plan](https://phabricator.wikimedia.org/T439313)
 
+<details>
+<summary><a href="https://archive.softwareheritage.org/swh:1:cnt:7080357046651731d4f8d676771b6666ff1547f6;origin=https://github.com/MaRDI4NFDI/srv-wmflabs-math26;anchor=swh:1:rev:7e13f65106c29e26f67ab905124dbbf82e179e18;path=/math24.md">reviewed</a> math24</summary>
+
+* all filtered dumps are on the project NFS share and stay
+* only the wiki databases (60 GB) are lost, they are rebuilt from the dumps
+* the volume quota is used up (310 GB), so math26 is built after math24 is gone
+* the dumps mount needs hiera `mount_nfs: true` on math26
+</details>
+
+<details>
+<summary>set up openstack cli and deleted math24 instance</summary>
+
+1. In Horizon, select the project `math`, then create an application credential under
+   Identity → Application Credentials and download its `clouds.yaml`.
+2. Install the client and store the credential:
+```bash
+brew install openstackclient
+mkdir -p ~/.config/openstack
+mv ~/Downloads/clouds.yaml ~/.config/openstack/clouds.yaml
+chmod 600 ~/.config/openstack/clouds.yaml
+```
+3. Rename the entry `openstack:` to `math:` in `clouds.yaml` and check it:
+```bash
+openstack --os-cloud math server list
+```
+   To make `math` the default, add `export OS_CLOUD=math` to `~/.zshrc`.
+4. Stop the containers and delete the instance:
+```bash
+ssh math24 'cd ~/srv-math24 && sudo docker-compose down'
+openstack --os-cloud math server delete --wait math24
+```
+The floating IP stays allocated for math26.
+The volume `math24` (90 GB) is kept detached for now.
+</details>
+
 ## 2025-12-11
 <details>
 <summary>copy files and create tar file</summary>
