@@ -1,3 +1,6 @@
+## 2026-09-27
+* [deployed](https://archive.softwareheritage.org/swh:1:rev:977675d233be8a2d467b183a50b6feb5803338c9;origin=https://github.com/MaRDI4NFDI/srv-wmflabs-math26) math26 with a single script in 16 minutes
+
 ## 2026-09-26
 * published [refresh plan](https://phabricator.wikimedia.org/T439313)
 
