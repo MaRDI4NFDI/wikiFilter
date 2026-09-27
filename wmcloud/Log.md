@@ -45,6 +45,48 @@ scp math26:wikiFilter/wmcloud/inputHashes.csv inputHashes.csv
 ```
 </details>
 
+<details>
+<summary>filtered the dumps for math on math26 (step 3)</summary>
+
+With [filterMath.sh](filterMath.sh), the output of the December 2025 run moved aside,
+started 14:17:04 UTC in the screen session `filter`:
+
+```bash
+mv /data/project/wdump/math /data/project/wdump/math25-12
+mkdir /data/project/wdump/math
+cd ~/wikiFilter/wmcloud
+bash filterMath.sh 2> filter.log
+```
+
+It finished on 2026-09-29 at 17:13:40 UTC with 663 files (1.6 GiB) and no errors in [filter.log](filter.log),
+copied from math26 with
+
+```bash
+scp math26:wikiFilter/wmcloud/filter.log filter.log
+```
+</details>
+
+<details>
+<summary>sample run of step 4 with afwiki, azwiki and bgwiki</summary>
+
+On math26, while step 3 was still running, with the finished filter output of three wikis
+and [createWiki](https://archive.softwareheritage.org/swh:1:cnt:e6438c800d3d7c95dbbb0cca28fed08645d1421b;origin=https://github.com/MaRDI4NFDI/srv-wmflabs-math26;anchor=swh:1:rev:79bae659e53839ae8077cceed6566517577f62ce;path=/container-scripts/mw/createWiki) after pulling srv-wmflabs-math26 to 79bae65:
+
+```bash
+sudo git -C /srv/srv-wmflabs-math26 pull
+sudo docker exec mediawiki-fpm bash -c 'cd /var/www/html/scripts && for w in afwiki azwiki bgwiki; do ./createWiki /data/project/wdump/math/$w.xml.bz; done'
+```
+
+* The checkout on math26 was still at the deployed commit, so the first attempt ran an old `createWiki` that stopped before the import.
+* `LocalSettings.php` did not select the wiki for maintenance scripts, and the imports stopped at the first module page.
+  Fixed in [LocalSettings.php](https://archive.softwareheritage.org/swh:1:cnt:7917fcd87c026bd088976df447f90ba42853aefd;origin=https://github.com/MaRDI4NFDI/srv-wmflabs-math26;anchor=swh:1:rev:cfca0fcf8956a4dfd54bdfbf415f50fd564dffe3;path=/LocalSettings.php) of cfca0fc and copied to math26 for testing.
+* `installPreConfigured` failed with "Container disabled!" on a single database server.
+  A fix for MediaWiki core is under review ([T439345](https://phabricator.wikimedia.org/T439345), [Gerrit change 1345374](https://gerrit.wikimedia.org/r/1345374))
+  and was patched into the container for testing.
+* Imported 906, 1021 and 1821 pages, all pages of the three dumps, at about 1 page per second.
+* `createWiki` can be run again on an existing wiki; it skips what is already there.
+</details>
+
 ## 2026-09-26
 * published [refresh plan](https://phabricator.wikimedia.org/T439313)
 
