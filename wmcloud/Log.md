@@ -3,6 +3,28 @@
 * [generated](https://archive.softwareheritage.org/swh:1:rev:d42c18c0f6ad2370cfbd74d56ff61ce22f8230b2;origin=https://github.com/MaRDI4NFDI/srv-wmflabs-math26) all passwords on math26 and pinned the images to major versions, kept current by Watchtower
 * [added](https://archive.softwareheritage.org/swh:1:rev:450a4251528aedde00c28fd459196a023eecd98e;origin=https://github.com/MaRDI4NFDI/srv-wmflabs-math26) a [second route](https://math-traefik-dashboard.wmcloud.org/dashboard/) to the Traefik dashboard that does not rely on Traefik's Let's Encrypt certificates
 
+<details>
+<summary>updated the dump links on math26 (step 1)</summary>
+
+With [wikiFilter](https://archive.softwareheritage.org/swh:1:rev:a3e0c59e4df92d8334796ae4f2de43c6ee8c50bc;origin=https://github.com/MaRDI4NFDI/wikiFilter)
+on [math26](https://archive.softwareheritage.org/swh:1:rev:450a4251528aedde00c28fd459196a023eecd98e;origin=https://github.com/MaRDI4NFDI/srv-wmflabs-math26),
+08:21:46–08:22:00 UTC:
+
+```bash
+cd ~/wikiFilter/wmcloud
+bash updateLinks.sh
+```
+
+* `/data/project/wdump/links/latest` now has 1041 links; 10 are new:
+  abstractwiki, bolwiki, isvwiki, kaiwiki, kajwiki, magwiki, minwikiquote, pplwiki, tokwiki, urwikisource.
+* The other 1031 already existed; `ln -s` failed with "File exists", but they still point to the current dump.
+* The script prints "Created symlink" even when `ln` fails.
+* Skipped: 52 folders without `latest`, and 11 wikis without a dump file:
+  10wikipedia, bawiktionary, chwikimedia, en_flaggedrevs_labswikimedia, ilwiktionary, strategyappwiki,
+  tokiponawiki, tokiponawikibooks, tokiponawikiquote, tokiponawiktionary, viwikimedia.
+
+</details>
+
 ## 2026-09-26
 * published [refresh plan](https://phabricator.wikimedia.org/T439313)
 
