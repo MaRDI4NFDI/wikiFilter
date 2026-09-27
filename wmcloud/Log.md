@@ -1,5 +1,7 @@
 ## 2026-09-27
 * [deployed](https://archive.softwareheritage.org/swh:1:rev:977675d233be8a2d467b183a50b6feb5803338c9;origin=https://github.com/MaRDI4NFDI/srv-wmflabs-math26) math26 with a single script in 16 minutes
+* [generated](https://archive.softwareheritage.org/swh:1:rev:d42c18c0f6ad2370cfbd74d56ff61ce22f8230b2;origin=https://github.com/MaRDI4NFDI/srv-wmflabs-math26) all passwords on math26 and pinned the images to major versions, kept current by Watchtower
+* [added](https://archive.softwareheritage.org/swh:1:rev:450a4251528aedde00c28fd459196a023eecd98e;origin=https://github.com/MaRDI4NFDI/srv-wmflabs-math26) a [second route](https://math-traefik-dashboard.wmcloud.org/dashboard/) to the Traefik dashboard that does not rely on Traefik's Let's Encrypt certificates
 
 ## 2026-09-26
 * published [refresh plan](https://phabricator.wikimedia.org/T439313)
