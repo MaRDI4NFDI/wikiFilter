@@ -25,6 +25,26 @@ bash updateLinks.sh
 
 </details>
 
+<details>
+<summary>recorded the dump hashes on math26 (step 2)</summary>
+
+With [getInputHash.sh](getInputHash.sh),
+started 11:38:41 UTC in the screen session `hashes`:
+
+```bash
+git clone https://github.com/MaRDI4NFDI/wikiFilter.git ~/wikiFilter
+cd ~/wikiFilter/wmcloud
+bash getInputHash.sh > inputHashes.csv
+```
+Finished 12:40:36 UTC (62 minutes): [inputHashes.csv](inputHashes.csv) lists 1041 dumps of 2026-09-01 with 432 GiB in total.
+Copied into this repository from a local clone:
+
+```bash
+cd wikiFilter/wmcloud
+scp math26:wikiFilter/wmcloud/inputHashes.csv inputHashes.csv
+```
+</details>
+
 ## 2026-09-26
 * published [refresh plan](https://phabricator.wikimedia.org/T439313)
 
