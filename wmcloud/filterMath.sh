@@ -14,7 +14,11 @@ SPLITSIZE=10000000
 shopt -s nullglob
 
 # Loop through all the files in /data/project/wdump/links/latest/
+total=$(ls "$SOURCE_DIR" | wc -l)
+n=0
 for symlink in "$SOURCE_DIR"/*; do
+    n=$((n + 1))
+    echo "[$n/$total] $(basename "$symlink")" >&2
     # Check if it is a symbolic link
     if [ -L "$symlink" ]; then
         # Get the actual path of the symlink

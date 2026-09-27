@@ -15,8 +15,13 @@ fi
 # Output CSV header
 echo "File Name,Real Path,File Size (bytes),Creation Date,SHA-256"
 
+total=$(ls "$DIR" | wc -l)
+n=0
+
 # Loop through all files in the specified directory
 for file in "$DIR"/*; do
+    n=$((n + 1))
+    echo "[$n/$total] $(basename "$file")" >&2
     # Get realpath
     real_path=$(realpath "$file")
 
