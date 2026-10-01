@@ -1,0 +1,44 @@
+<p>This dataset contains every page of all Wikimedia projects whose wikitext has a <code>&lt;math&gt;</code>, <code>&lt;chem&gt;</code> or <code>&lt;ce&gt;</code> tag.
+It covers the Wikipedias in all languages as well as Wiktionary, Wikibooks, Wikisource, Wikiversity, Wikidata, Commons and the other projects.
+It is the starting point for the other datasets on math in Wikimedia listed below.</p>
+
+<h2>Context</h2>
+<p>Mathematical formulae on Wikimedia wikis are written in a TeX dialect inside <code>&lt;math&gt;</code> tags and rendered by the <a href="https://www.mediawiki.org/wiki/Extension:Math">Math extension</a> of MediaWiki.
+To change the rendering, for example from images to MathML, all formulae in use have to be known and tested.
+This dataset makes them available without processing more than 400 GiB of dumps.
+It is maintained as part of the <a href="https://www.mardi4nfdi.de/">Mathematical Research Data Initiative (MaRDI)</a>.
+The refresh of this version is tracked in <a href="https://phabricator.wikimedia.org/T439313">T439313</a>.</p>
+
+<h2>Files</h2>
+<ul>
+<li><code>math.tar</code> contains one file <code>&lt;dbname&gt;.xml.bz</code> per wiki with at least one tag, for example <code>enwiki.xml.bz</code> for the English Wikipedia.
+The files are bzip2-compressed MediaWiki XML exports with the current revision of each matching page, in all namespaces.
+They can be read with any XML parser or imported into MediaWiki with <code>importDump.php</code>.
+The database names are listed in the <a href="https://meta.wikimedia.org/wiki/Special:SiteMatrix">site matrix</a>.
+This version has 663 files (1.6 GiB) from 1041 dumps.</li>
+<li><code>inputHashes.csv</code> lists every input dump with its path, size, creation date and SHA-256.
+1028 dumps are from 2026-09-01; the others are the last dumps of closed wikis.</li>
+</ul>
+
+<h2>Pipeline</h2>
+<ol>
+<li>Link the latest <code>pages-articles-multistream</code> dump of every wiki on Wikimedia Cloud VPS.</li>
+<li>Record the hashes of the dumps (<code>inputHashes.csv</code>).</li>
+<li>Keep the pages with math tags (<code>math.tar</code>, this dataset).</li>
+<li>Import each filtered dump into its own MediaWiki with the MathSearch extension.</li>
+<li>Export all formulae (<a href="https://doi.org/10.5281/zenodo.15162181">10.5281/zenodo.15162181</a>) and statistics per wiki (<a href="https://doi.org/10.5281/zenodo.17838884">10.5281/zenodo.17838884</a>).</li>
+<li>Render all formulae as MathML (<a href="https://doi.org/10.5281/zenodo.15612155">10.5281/zenodo.15612155</a>).</li>
+</ol>
+<p>The steps are described in the <a href="https://archive.softwareheritage.org/swh:1:cnt:469e3b05be04dd3cd77ab9a0540cbddcfb865e68;origin=https://github.com/MaRDI4NFDI/wikiFilter;anchor=swh:1:rev:aa782b0d9e3580735a0a02620f395690fc16ffa0;path=/wmcloud/README.md">README</a>, and every run is recorded in the <a href="https://github.com/MaRDI4NFDI/wikiFilter/blob/master/wmcloud/Log.md">log</a>.
+This version was made with
+<a href="https://archive.softwareheritage.org/swh:1:cnt:2d8f3040590dc425a59dfa51ab222912d2d0a985;origin=https://github.com/MaRDI4NFDI/wikiFilter;anchor=swh:1:rev:aa782b0d9e3580735a0a02620f395690fc16ffa0;path=/wmcloud/updateLinks.sh">updateLinks.sh</a>,
+<a href="https://archive.softwareheritage.org/swh:1:cnt:87c0e8fe2a05adb25c20a737e0b7d3e2ef05e49b;origin=https://github.com/MaRDI4NFDI/wikiFilter;anchor=swh:1:rev:aa782b0d9e3580735a0a02620f395690fc16ffa0;path=/wmcloud/getInputHash.sh">getInputHash.sh</a>,
+<a href="https://archive.softwareheritage.org/swh:1:cnt:a6683bc3aa8a2a1a47db9796b635afbf831be7ec;origin=https://github.com/MaRDI4NFDI/wikiFilter;anchor=swh:1:rev:aa782b0d9e3580735a0a02620f395690fc16ffa0;path=/wmcloud/filterMath.sh">filterMath.sh</a> and
+<a href="https://archive.softwareheritage.org/swh:1:cnt:410948bfe7bfd25b48da45c0872fbdf70bfcf986;origin=https://github.com/MaRDI4NFDI/wikiFilter;anchor=swh:1:rev:aa782b0d9e3580735a0a02620f395690fc16ffa0;path=/wikiFilter.py">wikiFilter.py</a>.</p>
+
+<h2>Limitations</h2>
+<ul>
+<li>A page is only included if the tag is in its own wikitext.
+Formulae that come from templates, or that are written without tags, for example with the <code>{{math}}</code> template, are missing.</li>
+<li>Private wikis have no public dumps and are not included.</li>
+</ul>

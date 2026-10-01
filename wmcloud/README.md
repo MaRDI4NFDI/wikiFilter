@@ -60,6 +60,25 @@ Writes one `<wiki>.xml.bz` per wiki to `/data/project/wdump/math`, overwriting t
 Takes many hours.
 The files, packed as `math.tar`, and `inputHashes.csv` make up the first dataset.
 
+To publish them as a new version on Zenodo, pack the files and run [zenodoUpload.sh](zenodoUpload.sh)
+with a token that has the `deposit:write` scope:
+
+```bash
+tar -cf /data/project/wdump/math.tar -C /data/project/wdump math
+read -s ZENODO_TOKEN && export ZENODO_TOKEN
+./zenodoUpload.sh 15058128 zenodo/math.json zenodo/math.html /data/project/wdump/math.tar inputHashes.csv
+```
+
+The new version keeps the metadata of the previous one, except for the fields in [zenodo/math.json](zenodo/math.json),
+which include the MaRDI funding, and the description in [zenodo/math.html](zenodo/math.html).
+It stays a draft; review and publish it on Zenodo.
+`ZENODO_API=https://sandbox.zenodo.org/api` uses the sandbox.
+
+To get a token, log in to Zenodo, open [Applications](https://zenodo.org/account/settings/applications/tokens/new/),
+create a personal access token with only the `deposit:write` scope and copy it, since Zenodo shows it once.
+Do not save it in a file on math26: every member of the project has sudo and could read it.
+`read -s` keeps it out of the shell history; delete the token on Zenodo after the upload.
+
 ### 4. Import the filtered dumps
 
 Inside the MediaWiki container on math26, create one wiki per filtered dump:

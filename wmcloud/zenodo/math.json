@@ -1,0 +1,29 @@
+{
+  "title": "Pages with math tags from all Wikimedia projects",
+  "version": "2026-09-01",
+  "subjects": [
+    {"subject": "Wikipedia"},
+    {"subject": "Wikimedia"},
+    {"subject": "mathematical formulae"},
+    {"subject": "TeX"},
+    {"subject": "MathML"},
+    {"subject": "MediaWiki Math extension"}
+  ],
+  "funding": [
+    {
+      "funder": {"id": "018mejw64"},
+      "award": {
+        "number": "460135501",
+        "title": {"en": "MaRDI"},
+        "identifiers": [{"scheme": "url", "identifier": "https://gepris.dfg.de/gepris/projekt/460135501"}]
+      }
+    }
+  ],
+  "related_identifiers": [
+    {"identifier": "https://dumps.wikimedia.org/", "scheme": "url", "relation_type": {"id": "isderivedfrom"}, "resource_type": {"id": "dataset"}},
+    {"identifier": "https://github.com/MaRDI4NFDI/wikiFilter", "scheme": "url", "relation_type": {"id": "iscompiledby"}, "resource_type": {"id": "software"}},
+    {"identifier": "10.5281/zenodo.15162181", "scheme": "doi", "relation_type": {"id": "issourceof"}, "resource_type": {"id": "dataset"}},
+    {"identifier": "10.5281/zenodo.17838884", "scheme": "doi", "relation_type": {"id": "issourceof"}, "resource_type": {"id": "dataset"}},
+    {"identifier": "https://phabricator.wikimedia.org/T439313", "scheme": "url", "relation_type": {"id": "isdocumentedby"}, "resource_type": {"id": "other"}}
+  ]
+}
