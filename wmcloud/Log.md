@@ -32,11 +32,60 @@ Started 08:09:24 UTC in the screen session `import`:
 sudo docker exec mediawiki-fpm bash -c 'cd /var/www/html/scripts && ./createAllWikis.sh'
 ```
 
+* The container was started before step 3 renamed `/data/project/wdump/math` to `math25-12`,
+  so it still saw the old directory and imported the 656 dumps of December 2025.
+  The logs are in `/data/project/wdump/math25-12/log`.
 * `createAllWikis.sh` waited for one import every four wikis instead of keeping four running,
-  so all wikis started within 40 minutes and 474 failed with "Too many connections" (151 allowed).
+  so 474 wikis failed with "Too many connections" (151 allowed).
 * 12 Wikisources stopped at the first page with the content model `proofread-page`,
   and Commons at `wikibase-mediainfo`.
-* The logs are in `/data/project/wdump/math/log`.
+* Finished 16:40:50 UTC; 124 wikis were imported completely, at about 0.45 pages per second each.
+</details>
+
+<details>
+<summary>re-imported the failed wikis, then stopped (step 4)</summary>
+
+With srv-wmflabs-math26 at [d9ecfde](https://archive.softwareheritage.org/swh:1:rev:d9ecfde1f8b075e9f6c26b15c98387e591cc715c;origin=https://github.com/MaRDI4NFDI/srv-wmflabs-math26) (four imports at a time, ProofreadPage on the Wikisources):
+
+```bash
+sudo git -C /srv/srv-wmflabs-math26 pull
+cd /srv/srv-wmflabs-math26 && sudo docker compose restart mediawiki-fpm
+sudo docker exec mediawiki-fpm bash -c 'cd /var/www/html/scripts && ./createAllWikis.sh'
+```
+
+* The restart made the container see the new `/data/project/wdump/math` with the dumps of 2026-09-01.
+* Four imports ran at a time, as intended.
+* Stopped at 23:07:17 UTC, because the wikis of the first run would mix the dumps of December 2025 and September 2026.
+  `log-2026-10-02` holds copies of the first 12 logs of this run.
+</details>
+
+<details>
+<summary>measured the import speed</summary>
+
+On dewiki, two minutes each:
+
+```bash
+cd /data/project/wdump/math
+timeout 120 /var/www/html/w/maintenance/run importDump --wiki dewiki --report 100 < <(bzcat dewiki.xml.bz)
+timeout 120 /var/www/html/w/maintenance/run importDump --wiki dewiki --report 100 --no-updates --skip-to 5000 < <(bzcat dewiki.xml.bz)
+```
+
+* With updates, every page is parsed and its formulae rendered: about 1 page per second.
+* With `--no-updates`: about 38 pages per second.
+  The new dumps have about 260,000 pages, so the import should take about two hours.
+</details>
+
+<details>
+<summary>removed the containers and the volumes</summary>
+
+At 23:44:02 UTC, to import all wikis again from the dumps of 2026-09-01 only:
+
+```bash
+cd /srv/srv-wmflabs-math26 && sudo docker compose down --volumes
+```
+
+* Removed the volumes `beta_mw-database`, `beta_mw-images` and `beta_mw-cache`.
+* The next import uses srv-wmflabs-math26 at [4cf9033](https://archive.softwareheritage.org/swh:1:rev:4cf90330e3885d0ce5f964b716ed77085858a81f;origin=https://github.com/MaRDI4NFDI/srv-wmflabs-math26): `importDump --no-updates` and MathSearch on all wikis.
 </details>
 
 * posted the status on [T439313](https://phabricator.wikimedia.org/T439313)
@@ -115,7 +164,7 @@ scp math26:wikiFilter/wmcloud/filter.log filter.log
 <details>
 <summary>sample run of step 4 with afwiki, azwiki and bgwiki</summary>
 
-On math26, while step 3 was still running, with the finished filter output of three wikis
+On math26, while step 3 was still running, with three wikis
 and [createWiki](https://archive.softwareheritage.org/swh:1:cnt:e6438c800d3d7c95dbbb0cca28fed08645d1421b;origin=https://github.com/MaRDI4NFDI/srv-wmflabs-math26;anchor=swh:1:rev:79bae659e53839ae8077cceed6566517577f62ce;path=/container-scripts/mw/createWiki) after pulling srv-wmflabs-math26 to 79bae65:
 
 ```bash
@@ -129,7 +178,8 @@ sudo docker exec mediawiki-fpm bash -c 'cd /var/www/html/scripts && for w in afw
 * `installPreConfigured` failed with "Container disabled!" on a single database server.
   A fix for MediaWiki core is under review ([T439345](https://phabricator.wikimedia.org/T439345), [Gerrit change 1345374](https://gerrit.wikimedia.org/r/1345374))
   and was patched into the container for testing.
-* Imported 906, 1021 and 1821 pages, all pages of the three dumps, at about 1 page per second.
+* Imported 906, 1021 and 1821 pages at about 1 page per second.
+  These were the dumps of December 2025: the container still saw the renamed directory (see 2026-10-02).
 * `createWiki` can be run again on an existing wiki; it skips what is already there.
 </details>
 
