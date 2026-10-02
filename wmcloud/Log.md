@@ -1,3 +1,46 @@
+## 2026-10-02
+<details>
+<summary>published the pages with math tags on Zenodo (step 3)</summary>
+
+`math.tar` was packed on math26 on 2026-10-01 at 16:51 UTC (663 files under `math/`):
+
+```bash
+tar -cf /data/project/wdump/math.tar -C /data/project/wdump math
+```
+
+Uploaded with [zenodoUpload.sh](zenodoUpload.sh), copied to math26 with `scp` before it was pushed:
+
+```bash
+cd ~/wikiFilter/wmcloud
+read -s ZENODO_TOKEN && export ZENODO_TOKEN
+./zenodoUpload.sh 15058128 zenodo/math.json zenodo/math.html /data/project/wdump/math.tar inputHashes.csv
+```
+
+* The first runs failed with a 500: the draft came in the legacy format, and the update was sent in the new one.
+  The failed drafts were discarded.
+* The upload of 1.7 GB took 8 minutes; the MD5 sums on Zenodo match the files on math26.
+* The version field `2026-09-01` was cleared on Zenodo, so it shows as v4.
+* Published as [10.5281/zenodo.23098003](https://doi.org/10.5281/zenodo.23098003).
+</details>
+
+<details>
+<summary>started the import of all wikis (step 4)</summary>
+
+Started 08:09:24 UTC in the screen session `import`:
+
+```bash
+sudo docker exec mediawiki-fpm bash -c 'cd /var/www/html/scripts && ./createAllWikis.sh'
+```
+
+* `createAllWikis.sh` waited for one import every four wikis instead of keeping four running,
+  so all wikis started within 40 minutes and 474 failed with "Too many connections" (151 allowed).
+* 12 Wikisources stopped at the first page with the content model `proofread-page`,
+  and Commons at `wikibase-mediainfo`.
+* The logs are in `/data/project/wdump/math/log`.
+</details>
+
+* posted the status on [T439313](https://phabricator.wikimedia.org/T439313)
+
 ## 2026-10-01
 * prepared the Zenodo upload of step 3 with [zenodoUpload.sh](zenodoUpload.sh), [description](zenodo/math.html) and [MaRDI funding](zenodo/math.json)
 
