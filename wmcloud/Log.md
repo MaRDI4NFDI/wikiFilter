@@ -1,3 +1,82 @@
+## 2026-10-03
+<details>
+<summary>imported all wikis (step 4)</summary>
+
+With srv-wmflabs-math26 at [4cf9033](https://archive.softwareheritage.org/swh:1:rev:4cf90330e3885d0ce5f964b716ed77085858a81f;origin=https://github.com/MaRDI4NFDI/srv-wmflabs-math26) (import with `--no-updates`, MathSearch on all wikis),
+after recreating the containers:
+
+```bash
+sudo git -C /srv/srv-wmflabs-math26 pull
+cd /srv/srv-wmflabs-math26 && sudo docker compose up -d
+```
+
+The fix for "Container disabled!" ([T439345](https://phabricator.wikimedia.org/T439345)) is merged in core,
+but not yet in the image, so it was cherry-picked into the container:
+
+```bash
+sudo docker exec mediawiki-fpm sh -c 'cd /var/www/html/w && git fetch --depth=2 origin be32a607334bbed7a854e6af3a11953571d1fecc && git cherry-pick -n FETCH_HEAD'
+```
+
+Started 10:27:34 UTC in the screen session `import`:
+
+```bash
+sudo docker exec mediawiki-fpm bash -c 'cd /var/www/html/scripts && ./createAllWikis.sh'
+```
+
+* A first try with `--depth=1` lacked the parent commit, so the cherry-pick conflicted everywhere; it was undone with `git reset --merge`.
+* Four imports ran at a time; all wikis were done at about 11:15 UTC.
+* 659 of 663 wikis were imported.
+  sourceswiki and test2wiki stopped at the content model `proofread-page`, as ProofreadPage is only loaded for databases ending in wikisource.
+  commonswiki and wikidatawiki stopped at Wikibase content models, see [T440096](https://phabricator.wikimedia.org/T440096).
+* The core fix is [be32a60](https://archive.softwareheritage.org/swh:1:rev:be32a607334bbed7a854e6af3a11953571d1fecc;origin=https://github.com/wikimedia/mediawiki).
+</details>
+
+<details>
+<summary>tested the formula ids and started UpdateMath on all wikis (step 5)</summary>
+
+MathSearch with [Gerrit change 1349809](https://gerrit.wikimedia.org/r/1349809), before it was merged,
+copied into the container as a patch with `scp` and applied with `git apply -3`.
+The last version applied is the one uploaded as the patch set after this run.
+The change gives every formula its id from the revision and its position in the source, also during UpdateMath.
+php-fpm keeps old code in its opcache (`opcache.validate_timestamps=0`), so it was reloaded after each patch:
+
+```bash
+sudo docker kill --signal=USR2 mediawiki-fpm
+```
+
+For maintenance scripts InstantCommons is off, written into `LocalSettings.php` in place, as the file is mounted on its own,
+and committed as [4303ccf](https://archive.softwareheritage.org/swh:1:rev:4303ccfba0e023cd13fb468426bbe75fa923be28;origin=https://github.com/MaRDI4NFDI/srv-wmflabs-math26).
+
+* UpdateMath on afwiki: 7830 formulae in 56 s, 1 failed; on cawiki 167022 formulae in about one hour, 42 failed.
+  Failed formulae are in `mathlog` with `math_statuscode` 1 (TeX error) or 2 (rendering error).
+* A check of every page of afwiki and cawiki found no formula id that points to another formula:
+
+  | | afwiki | cawiki |
+  |---|---|---|
+  | pages with math | 903 | 9,324 |
+  | math, chem and ce tags in the source | 7,828 | 167,019 |
+  | formulae on the pages | 7,792 | 159,400 |
+  | id points to the right formula | 7,772 | 159,072 |
+  | id points to another formula | 0 | 0 |
+  | formulae without id, from templates | 20 | 327 |
+  | tags that the page does not show | 56 | 8,100 |
+
+* Templates: the filtered dumps contain only templates that have math themselves.
+  afwiki has 7 templates and 1 module next to 898 articles.
+  Formulae without id come from such templates, for example `Sjabloon:SI basiseenhede` on SI-stelsel and `Sjabloon:Ioonkas` on Fosfaat.
+* Formulae in parameters of missing templates are not shown, about 5% on cawiki (8,100 of 167,000),
+  for example in `{{Caixa desplegable}}` on Acceleració.
+  So are formulae in reference groups whose list is a missing template, such as `{{reflist|group=Nota}}` or `{{Verwysings|group=note}}` on afwiki.
+  At first UpdateMath left these formulae out of `mathlog`, so they would have been missing from the dataset of all formulae.
+  On afwiki, `mathlog` grew from 5,837 to 5,908 distinct formulae after the fix, so the 71 formulae the pages do not show are stored.
+
+Started 21:07:03 UTC in the screen session `updatemath`, four wikis at a time, with one log per wiki:
+
+```bash
+sudo docker exec mediawiki-fpm bash -c 'cd /var/www/html/w && ls /data/project/wdump/math/*.xml.bz | xargs -n1 basename | sed s/.xml.bz// | xargs -P 4 -I{} sh -c "maintenance/run MathSearch:UpdateMath --wiki {} > /data/project/wdump/math/updatemath/{}.log 2>&1"'
+```
+</details>
+
 ## 2026-10-02
 <details>
 <summary>published the pages with math tags on Zenodo (step 3)</summary>
