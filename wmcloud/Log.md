@@ -1,3 +1,149 @@
+## 2026-10-04
+<details>
+<summary>the database crashed during UpdateMath, restarted it</summary>
+
+At 11:29:27 UTC MariaDB aborted after 14 h of UpdateMath:
+`innodb_fatal_semaphore_wait_threshold was exceeded for dict_sys.latch`.
+Its log had been silent since 11:04 UTC.
+The container has no restart policy, so all later wikis failed within seconds.
+
+* Memory was nearly full, 14 of 15 GB, without swap.
+  The UpdateMath processes of enwiki had 4.8 GB and of frwikiversity 4.3 GB.
+* The OOM killer did not run.
+* enwiki stopped at revision 43,000 of 48,690.
+* 282 of 663 wikis finished; 381 failed.
+
+The database was started again and recovered without errors:
+
+```bash
+cd /srv/srv-wmflabs-math26 && sudo docker compose up -d database
+```
+</details>
+
+<details>
+<summary>reran UpdateMath for the failed wikis with the memory fix</summary>
+
+The hooks of MathSearch kept the id generator of every revision.
+UpdateMath renders all revisions in one process, so its memory grew with the number of pages.
+The fix, [patch set 1 of Gerrit change 1350612](https://gerrit.wikimedia.org/r/c/mediawiki/extensions/MathSearch/+/1350612/1), before it was merged,
+was copied into the container with `scp` and applied with `git apply` on top of MathSearch [55886b8](https://archive.softwareheritage.org/swh:1:rev:55886b87eea3b53b80c405070cbc54f61767ef54;origin=https://github.com/wikimedia/mediawiki-extensions-MathSearch), the merged [patch set 3 of Gerrit change 1349809](https://gerrit.wikimedia.org/r/c/mediawiki/extensions/MathSearch/+/1349809/3).
+php-fpm was reloaded with `sudo docker kill --signal=USR2 mediawiki-fpm`.
+
+Started 13:29:43 UTC in the screen session `updatemath2`:
+
+```bash
+screen -dmS updatemath2 bash -c "sudo bash /tmp/rerun.sh 2>&1 | sudo tee /data/project/wdump/math/updatemath/rerun.out > /dev/null"
+```
+
+`/tmp/rerun.sh` was copied to math26 with `scp`.
+It moves the logs of the failed wikis to `updatemath/failed-261004/`, reruns them four at a time,
+and writes the free memory and the memory of each UpdateMath process to `updatemath/memory.log` every 5 minutes:
+
+```bash
+#!/bin/bash
+# Rerun UpdateMath for the wikis that failed in the first run, and sample memory every 5 minutes
+D=/data/project/wdump/math/updatemath
+cd $D || exit 1
+mkdir -p failed-261004
+for f in $(grep -LE '^Updated [0-9]+ formulae' *.log); do mv "$f" failed-261004/; done
+ls failed-261004 | sed 's/\.log$//' > failed-261004/list.txt
+echo "$(wc -l < failed-261004/list.txt) wikis to rerun"
+date -u
+(
+	sleep 30
+	while pgrep -f 'run MathSearch:UpdateMath --wiki' > /dev/null; do
+		t=$(date -u +%FT%H:%M)
+		echo "$t available_mb=$(free -m | awk '/^Mem/{print $7}')" >> memory.log
+		ps -eo etime=,rss=,args= | grep '^ *[0-9:-]* *[0-9]* php maintenance/run MathSearch:UpdateMath' |
+			awk -v t="$t" '{print t, $NF, "rss_mb=" int($2/1024), "etime=" $1}' >> memory.log
+		sleep 300
+	done
+) &
+sudo docker exec mediawiki-fpm bash -c "cd /var/www/html/w && xargs -P 4 -I{} sh -c 'maintenance/run MathSearch:UpdateMath --wiki {} > $D/{}.log 2>&1 || echo failed {}' < $D/failed-261004/list.txt"
+date -u
+wait
+```
+
+* The first start failed before it changed anything, as `updatemath/` belongs to root.
+* `list.txt` was created in `failed-261004/` before `ls` listed that directory,
+  so it is in the list as a wiki of its own; its run failed harmlessly.
+* At 22:01 UTC 339 of the 381 wikis were done, none failed.
+</details>
+
+<details>
+<summary>found two more causes of the memory growth and applied their fixes</summary>
+
+The id generator fix alone did not stop the growth:
+after 30 min frwikiversity had 755 MB, after 60 min 1,372 MB.
+Diagnostic scripts, copied to math26 with `scp` and run in the container, found two causes.
+
+* MathObject defers its writes to `mathlog` until the end of each chunk of 1,000 revisions.
+  UpdateMath on frwikiversity, revisions 2000–2200 (69,000 formulae):
+
+  | chunk size | peak memory | memory at the end | time |
+  |---|---|---|---|
+  | 1000 | 486 MB | 145 MB | 16.9 min |
+  | 25 | 223 MB | 136 MB | 11.8 min |
+
+  [fa1d7b0](https://archive.softwareheritage.org/swh:1:rev:fa1d7b075d1ba5e1ee52cfbf6e50063cf3a1d539;origin=https://github.com/wikimedia/mediawiki-extensions-MathSearch), the merged [patch set 2 of Gerrit change 1350612](https://gerrit.wikimedia.org/r/c/mediawiki/extensions/MathSearch/+/1350612/2), lowers the default chunk size to 100.
+  [Its difference to patch set 1](https://gerrit.wikimedia.org/r/c/mediawiki/extensions/MathSearch/+/1350612/1..2) was applied in the container at 16:41 UTC.
+* In maintenance scripts, WANObjectCache keeps two stats samples for every `getWithSetCallback()` and never flushes them,
+  about 0.8 KB for every check of a formula, see [T440146](https://phabricator.wikimedia.org/T440146).
+  With the core fix, the code of [patch set 1 of Gerrit change 1350817](https://gerrit.wikimedia.org/r/c/mediawiki/core/+/1350817/1), applied with `git apply` in the container at 17:58 UTC,
+  the run with chunk size 25 needed 115 MB at its peak and 49 MB at the end, in 8.6 min.
+
+Wikis started after these fixes stay small:
+ruwiki, started at 19:03 UTC, grew from 169 to 193 MB between 19:30 and 21:45 UTC.
+enwiki started before them and had 2.1 GB after 8.5 h.
+</details>
+
+<details>
+<summary>scheduled a second import of all wikis</summary>
+
+All 659 imports ended with `Done!` and without errors,
+but importDump might skip single pages without aborting.
+So all dumps are imported again after UpdateMath, which skips existing revisions.
+The page and revision counts before and after show which wikis need UpdateMath again.
+
+Started 22:09:19 UTC in the screen session `reimport`, it waits until no UpdateMath runs:
+
+```bash
+screen -dmS reimport bash -c "sudo bash /tmp/reimport.sh > /data/project/wdump/math/reimport.out 2>&1"
+```
+
+`/tmp/reimport.sh` was copied to math26 with `scp`:
+
+```bash
+#!/bin/bash
+# Waits for UpdateMath to finish, imports all dumps again and lists the wikis that gained pages or revisions
+M=/data/project/wdump/math
+D=$M/reimport
+mkdir -p $D/log
+cd $D || exit 1
+
+counts() {
+	echo "SELECT CONCAT('SELECT ', QUOTE(table_schema), ', (SELECT COUNT(*) FROM \`', table_schema, '\`.page), (SELECT COUNT(*) FROM \`', table_schema, '\`.revision);') FROM information_schema.tables WHERE table_name = 'page';" |
+		sudo docker exec -i db bash -c 'mariadb -uroot -p"$(cat /run/secrets/db_root_password)" -N | mariadb -uroot -p"$(cat /run/secrets/db_root_password)" -N' | sort
+}
+
+while pgrep -f 'run MathSearch:UpdateMath' > /dev/null; do
+	sleep 300
+done
+echo "UpdateMath finished $(date -u)"
+
+counts > counts-before.tsv
+echo "$(wc -l < counts-before.tsv) wikis counted, import started $(date -u)"
+
+ls $M/*.xml.bz | grep -vE '/(commonswiki|wikidatawiki|sourceswiki|test2wiki)\.' |
+	sudo docker exec -i mediawiki-fpm bash -c "xargs -P 4 -I{} sh -c 'w=\$(basename {} .xml.bz); bzcat {} | /var/www/html/w/maintenance/run importDump --wiki \$w --no-updates > $D/log/\$w.log 2>&1 || echo failed \$w'"
+echo "import finished $(date -u)"
+
+counts > counts-after.tsv
+diff counts-before.tsv counts-after.tsv > changed.txt
+echo "$(grep -c '^>' changed.txt) wikis changed, $(grep -L '^Done!' log/*.log | wc -l) imports without Done!"
+```
+</details>
+
 ## 2026-10-03
 <details>
 <summary>imported all wikis (step 4)</summary>
@@ -34,7 +180,7 @@ sudo docker exec mediawiki-fpm bash -c 'cd /var/www/html/scripts && ./createAllW
 <details>
 <summary>tested the formula ids and started UpdateMath on all wikis (step 5)</summary>
 
-MathSearch with [Gerrit change 1349809](https://gerrit.wikimedia.org/r/1349809), before it was merged,
+MathSearch [55886b8](https://archive.softwareheritage.org/swh:1:rev:55886b87eea3b53b80c405070cbc54f61767ef54;origin=https://github.com/wikimedia/mediawiki-extensions-MathSearch), [patch set 3 of Gerrit change 1349809](https://gerrit.wikimedia.org/r/c/mediawiki/extensions/MathSearch/+/1349809/3), before it was merged,
 copied into the container as a patch with `scp` and applied with `git apply -3`.
 The last version applied is the one uploaded as the patch set after this run.
 The change gives every formula its id from the revision and its position in the source, also during UpdateMath.
