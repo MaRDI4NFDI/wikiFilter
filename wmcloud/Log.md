@@ -1,3 +1,96 @@
+## 2026-10-05
+<details>
+<summary>UpdateMath rerun finished</summary>
+
+The rerun in the screen session `updatemath2` finished at 02:36:29 UTC.
+All 381 wikis ended with `Updated N formulae`, none failed; enwiki processed all 48,690 revisions.
+`memory.log` has no samples after 02:36 UTC, see the next entry.
+</details>
+
+<details>
+<summary>imported all dumps a second time</summary>
+
+The waiting loops of `reimport.sh` and of the memory logger in `rerun.sh` used `pgrep -f 'run MathSearch:UpdateMath'`.
+That also matched the command line of the screen session `updatemath` of the first run, which was still open with an idle shell.
+So the re-import waited until that session was closed shortly after 15:16 UTC:
+
+```bash
+screen -S updatemath -X quit
+```
+
+The re-import ran from 15:19:36 to 15:27:17 UTC.
+All 659 imports ended with `Done!`, no wiki gained pages, but 3 wikis gained revisions (`reimport/changed.txt`):
+
+| wiki | pages | revisions before → after |
+|---|---|---|
+| frwiki | 22,684 | 22,684 → 22,686 |
+| hewiki | 7,410 | 7,410 → 7,411 |
+| liquidthreads_labswikimedia | 8 | 8 → 15 |
+
+The new revisions are copies of existing ones, with the same timestamp and content, and became `page_latest`.
+importDump compares the `sha1` declared in the dump with the hash of the stored text, but the dump declares it for the text as stored on Wikipedia,
+see [T440235](https://phabricator.wikimedia.org/T440235):
+
+* frwiki, `Wikipédia:Caractères spéciaux/Caractères phonétiques` and `…/Caractères cyrilliques`: the text contains `\r\n`, which XML parsing turns into `\n`.
+* hewiki, `ויקיפדיה:ניקוד/סקר ניקוד`: the stored text is not in NFC, the dump contains it in NFC.
+* liquidthreads_labswikimedia, 7 `Thread:` pages: the dump has an empty `<sha1 />`, so importDump does not check for duplicates.
+
+The texts on math26 are correct, so the dumps and the formulae are unaffected.
+At 19:42 UTC `/tmp/dedupe.sql`, copied to math26 with `scp`, made the originals current again and deleted the copies:
+
+```bash
+ssh math26 'sudo docker exec -i db bash -c "mariadb -uroot -p\"\$(cat /run/secrets/db_root_password)\" -t" < /tmp/dedupe.sql'
+```
+
+```sql
+-- Removes the revisions that the second import duplicated, see wmcloud/Log.md of 2026-10-05
+START TRANSACTION;
+UPDATE frwiki.page SET page_latest = (SELECT MIN(rev_id) FROM frwiki.revision WHERE rev_page = page_id) WHERE page_id IN (1046, 1088);
+DELETE FROM frwiki.slots WHERE slot_revision_id IN (22685, 22686);
+DELETE FROM frwiki.revision WHERE rev_id IN (22685, 22686);
+COMMIT;
+
+START TRANSACTION;
+UPDATE hewiki.page SET page_latest = (SELECT MIN(rev_id) FROM hewiki.revision WHERE rev_page = page_id) WHERE page_id = 2402;
+DELETE FROM hewiki.slots WHERE slot_revision_id = 7411;
+DELETE FROM hewiki.revision WHERE rev_id = 7411;
+COMMIT;
+
+START TRANSACTION;
+UPDATE liquidthreads_labswikimedia.page SET page_latest = (SELECT MIN(rev_id) FROM liquidthreads_labswikimedia.revision WHERE rev_page = page_id) WHERE page_id BETWEEN 2 AND 8;
+DELETE FROM liquidthreads_labswikimedia.slots WHERE slot_revision_id BETWEEN 9 AND 15;
+DELETE FROM liquidthreads_labswikimedia.ip_changes WHERE ipc_rev_id BETWEEN 9 AND 15;
+DELETE FROM liquidthreads_labswikimedia.revision WHERE rev_id BETWEEN 9 AND 15;
+COMMIT;
+
+SELECT 'frwiki' w, (SELECT COUNT(*) FROM frwiki.page) pages, (SELECT COUNT(*) FROM frwiki.revision) revisions, (SELECT COUNT(*) FROM frwiki.page WHERE page_latest NOT IN (SELECT rev_id FROM frwiki.revision)) dangling
+UNION ALL SELECT 'hewiki', (SELECT COUNT(*) FROM hewiki.page), (SELECT COUNT(*) FROM hewiki.revision), (SELECT COUNT(*) FROM hewiki.page WHERE page_latest NOT IN (SELECT rev_id FROM hewiki.revision))
+UNION ALL SELECT 'lqt', (SELECT COUNT(*) FROM liquidthreads_labswikimedia.page), (SELECT COUNT(*) FROM liquidthreads_labswikimedia.revision), (SELECT COUNT(*) FROM liquidthreads_labswikimedia.page WHERE page_latest NOT IN (SELECT rev_id FROM liquidthreads_labswikimedia.revision));
+```
+
+Afterwards pages and revisions were equal again: frwiki 22,684, hewiki 7,410, liquidthreads_labswikimedia 8, and no `page_latest` without revision.
+
+The import completeness should be checked by comparing page counts in the future, not by importing again.
+</details>
+
+<details>
+<summary>compared two core fixes for the WANObjectCache stats</summary>
+
+For [T440146](https://phabricator.wikimedia.org/T440146), the code of [patch set 1 of Gerrit change 1350817](https://gerrit.wikimedia.org/r/c/mediawiki/core/+/1350817/1) (main StatsFactory in CLI mode)
+was compared with [patch set 1 of Gerrit change 1351365](https://gerrit.wikimedia.org/r/c/mediawiki/core/+/1351365/1) (NullStatsCache), both applied in the container with `git apply`.
+UpdateMath on frwikiversity, revisions 2000–2200, chunk size 25, one variant after the other on the idle machine:
+
+| variant | round 1 | round 2 | peak memory | memory at the end |
+|---|---|---|---|---|
+| no fix | 319.8 s | 318 s | 185 MB | 139 MB |
+| 1350817 | 304.1 s | 306 s | 115 MB | 49 MB |
+| 1351365 | 300.2 s | 317 s | 113 MB | 49 MB |
+
+The round 2 times are taken from the modification times of the logs.
+Both fix the memory growth equally; the time differences are within the spread between the rounds.
+Afterwards the container has 1350817 applied again.
+</details>
+
 ## 2026-10-04
 <details>
 <summary>the database crashed during UpdateMath, restarted it</summary>
