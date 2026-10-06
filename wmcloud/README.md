@@ -13,6 +13,7 @@ Past runs are in the [log](Log.md).
 | [10.5281/zenodo.15058128](https://doi.org/10.5281/zenodo.15058128) | Wikipedia articles with math tags (`math.tar`, `inputHashes.csv`) | 2, 3 |
 | [10.5281/zenodo.15162181](https://doi.org/10.5281/zenodo.15162181) | all math inputs (`wmf_texvc_inputs.json`) | 5 |
 | [10.5281/zenodo.17838884](https://doi.org/10.5281/zenodo.17838884) | statistics on math use (`mathstat.csv`) | 5 |
+| [10.5281/zenodo.14209690](https://doi.org/10.5281/zenodo.14209690) | math inputs of English Wikipedia (`enwiki_texvc_inputs.json`) | 5 |
 | [10.5281/zenodo.15612155](https://doi.org/10.5281/zenodo.15612155) | MathML rendering of all inputs (`mathlog.csv`) | 6 |
 
 ## Setup
@@ -92,9 +93,14 @@ The logs go to `/data/project/wdump/math/log`.
 
 ### 5. Export the inputs and statistics
 
-In the database container, [allFormulae.sql](allFormulae.sql) collects the inputs of all wikis
-and exports them as JSON, and [stats.sql](stats.sql) counts formulae and pages per wiki.
-Both write to tables in the database `my_wiki`.
+On math26, [exportDatasets.sh](exportDatasets.sh) writes `mathstat.csv`, `wmf_texvc_inputs.json` and `enwiki_texvc_inputs.json`
+to `/data/project/wdump/datasets`:
+
+```bash
+./exportDatasets.sh
+```
+
+It collects the inputs of all wikis in the database `datasets`.
 
 ### 6. Render all inputs
 
