@@ -16,6 +16,8 @@ Past runs are in the [log](Log.md).
 | [10.5281/zenodo.14209690](https://doi.org/10.5281/zenodo.14209690) | math inputs of English Wikipedia (`enwiki_texvc_inputs.json`) | 5 |
 | [10.5281/zenodo.15612155](https://doi.org/10.5281/zenodo.15612155) | MathML rendering of all inputs (`mathlog.csv`) | 6 |
 
+The description and the metadata of each dataset are in [zenodo](zenodo), in a directory named after the number in its DOI.
+
 ## Setup
 
 On math26, clone this repository into the home directory and run the long steps in `screen`:
@@ -61,17 +63,25 @@ Writes one `<wiki>.xml.bz` per wiki to `/data/project/wdump/math`, overwriting t
 Takes many hours.
 The files, packed as `math.tar`, and `inputHashes.csv` make up the first dataset.
 
+What the filter keeps limits all later steps:
+
+* A page is kept only if its own wikitext has a closing `</math>`, `</ce>` or `</chem>` in lower case.
+  Pages whose only tags are unclosed, self-closing or in upper case, such as `<MATH>`, are missing.
+* Templates (namespace 10) and modules (828) are not kept, since `filterMath.sh` does not pass `--template`.
+  So formulae that a page gets from a template neither render after the import nor reach the index.
+  MathSearch indexes the math tags of the page's own wikitext instead, which only approximates what the parser renders.
+
 To publish them as a new version on Zenodo, pack the files and run [zenodoUpload.sh](zenodoUpload.sh)
 with a token that has the `deposit:write` scope:
 
 ```bash
 tar -cf /data/project/wdump/math.tar -C /data/project/wdump math
 read -s ZENODO_TOKEN && export ZENODO_TOKEN
-./zenodoUpload.sh 15058128 zenodo/math.json zenodo/math.html /data/project/wdump/math.tar inputHashes.csv
+./zenodoUpload.sh 15058128 zenodo/15058128/metadata.json zenodo/15058128/description.html /data/project/wdump/math.tar inputHashes.csv
 ```
 
-The new version keeps the metadata of the previous one, except for the fields in [zenodo/math.json](zenodo/math.json),
-which include the MaRDI funding, and the description in [zenodo/math.html](zenodo/math.html).
+The new version keeps the metadata of the previous one, except for the fields in [zenodo/15058128/metadata.json](zenodo/15058128/metadata.json),
+which include the MaRDI funding, and the description in [zenodo/15058128/description.html](zenodo/15058128/description.html).
 It stays a draft; review and publish it on Zenodo.
 `ZENODO_API=https://sandbox.zenodo.org/api` uses the sandbox.
 

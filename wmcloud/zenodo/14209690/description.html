@@ -1,0 +1,35 @@
+<p>This dataset contains every distinct mathematical input of the English Wikipedia.
+<code>enwiki_texvc_inputs.json</code> maps the MD5 hash of each input to the input.
+This version has 676,297 inputs.
+The inputs of all Wikimedia projects are in <a href="https://doi.org/10.5281/zenodo.15162181">10.5281/zenodo.15162181</a>.</p>
+
+<p>The first version appeared as
+<a href="https://archive.softwareheritage.org/swh:1:cnt:da76ae5a988839894a2ecdab29a5ab7c8df7dc80;origin=https://github.com/wikimedia/mediawiki-services-texvcjs;visit=swh:1:snp:1ea38f5e961b25c6d0adde0145f64791eb8fb67d;anchor=swh:1:rev:101925e2ab1712c70472ed144efaea34743e6700;path=/test/en-wiki-formulae.json">test/en-wiki-formulae.json</a> in texvcjs.</p>
+
+<h2>Format</h2>
+<p>The input is the content of the tag as the Math extension receives it:</p>
+<ul>
+<li><code>&lt;chem&gt;</code> and <code>&lt;ce&gt;</code> tags are wrapped in <code>\ce{…}</code>.</li>
+<li>The attribute <code>display="block"</code> wraps the input in <code>{\displaystyle …}</code>, <code>display="inline"</code> in <code>{\textstyle …}</code> and <code>display="linebreak"</code> in <code>\[ … \]</code>.</li>
+</ul>
+
+<h2>Pipeline</h2>
+<ol>
+<li>Keep the pages with math tags of the dump of 2026-09-01 (<a href="https://doi.org/10.5281/zenodo.23098003">10.5281/zenodo.23098003</a>).</li>
+<li>Import the filtered dump into a MediaWiki with the MathSearch extension.</li>
+<li>Store the input of every math tag of the current revisions in the table <code>mathlog</code> with the maintenance script <code>UpdateMath</code>.</li>
+<li>Export the inputs with <a href="https://github.com/MaRDI4NFDI/wikiFilter/blob/master/wmcloud/exportDatasets.sh">exportDatasets.sh</a>.</li>
+</ol>
+<p>Every run is recorded in the <a href="https://github.com/MaRDI4NFDI/wikiFilter/blob/master/wmcloud/Log.md">log</a>.</p>
+
+<h2>Changes</h2>
+<ul>
+<li>This version replaces <code>en-wiki-formulae-good.json</code> and <code>normalized.json</code> with the inputs of the dump of 2026-09-01.</li>
+<li>Inputs longer than 65,535 bytes are complete.</li>
+</ul>
+
+<h2>Limitations</h2>
+<ul>
+<li>A math tag without a closing tag takes the rest of the page as its input, as in MediaWiki itself.</li>
+<li>Formulae that come from templates, or that are written without tags, for example with the <code>{{math}}</code> template, are missing.</li>
+</ul>

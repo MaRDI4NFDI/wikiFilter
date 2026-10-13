@@ -1,0 +1,45 @@
+<p>This dataset contains every distinct mathematical input of all Wikimedia projects, including the Wikipedias in all languages.
+<code>wmf_texvc_inputs.json</code> maps the MD5 hash of each input to the input.
+This version has 4,165,088 inputs.</p>
+
+<h2>Context</h2>
+<p>Mathematical formulae on Wikimedia wikis are written in a TeX dialect inside <code>&lt;math&gt;</code> tags and rendered by the <a href="https://www.mediawiki.org/wiki/Extension:Math">Math extension</a> of MediaWiki.
+To change the rendering, for example from images to MathML, all formulae in use have to be known and tested.
+It is maintained as part of the <a href="https://www.mardi4nfdi.de/">Mathematical Research Data Initiative (MaRDI)</a>.
+The refresh of this version is tracked in <a href="https://phabricator.wikimedia.org/T439313">T439313</a>.</p>
+
+<h2>Format</h2>
+<p>The Wikipedia article on mass–energy equivalence contains the wikitext</p>
+<blockquote><p><code>&lt;math&gt;E = mc^2&lt;/math&gt;</code></p></blockquote>
+<p>Its input <code>E = mc^2</code> has the MD5 hash <code>281a70c20b16a38d7781189936e1ac9f</code>, so the file contains the row</p>
+<blockquote><p><code>"281a70c20b16a38d7781189936e1ac9f": "E = mc^2",</code></p></blockquote>
+<p>The input is the content of the tag as the Math extension receives it:</p>
+<ul>
+<li><code>&lt;chem&gt;</code> and <code>&lt;ce&gt;</code> tags are wrapped in <code>\ce{…}</code>.</li>
+<li>The attribute <code>display="block"</code> wraps the input in <code>{\displaystyle …}</code>, <code>display="inline"</code> in <code>{\textstyle …}</code> and <code>display="linebreak"</code> in <code>\[ … \]</code>.</li>
+</ul>
+
+<h2>Pipeline</h2>
+<ol>
+<li>Keep the pages with math tags of the dumps of 2026-09-01 (<a href="https://doi.org/10.5281/zenodo.23098003">10.5281/zenodo.23098003</a>).</li>
+<li>Import each filtered dump into its own MediaWiki with the MathSearch extension.</li>
+<li>Store the input of every math tag of the current revisions in the table <code>mathlog</code> of each wiki with the maintenance script <code>UpdateMath</code>.</li>
+<li>Merge the inputs of all wikis and export them with <a href="https://github.com/MaRDI4NFDI/wikiFilter/blob/master/wmcloud/exportDatasets.sh">exportDatasets.sh</a>.</li>
+</ol>
+<p>Every run is recorded in the <a href="https://github.com/MaRDI4NFDI/wikiFilter/blob/master/wmcloud/Log.md">log</a>.
+The second import of all dumps duplicated 10 revisions in 3 wikis, because importDump compares the hash declared in the dump with a text that differs (<a href="https://phabricator.wikimedia.org/T440235">T440235</a>).
+The duplicates were deleted before the export, as <a href="https://archive.softwareheritage.org/swh:1:cnt:679b790e6cd5bcf92c53c1ed67a397326dbbd48c;origin=https://github.com/MaRDI4NFDI/wikiFilter;anchor=swh:1:rev:44e3a950047c9f921320c75baf95099ed0f6427d;path=/wmcloud/Log.md;lines=10-75">recorded in the log</a>.</p>
+
+<h2>Changes</h2>
+<ul>
+<li>Inputs longer than 65,535 bytes were cut off in earlier versions. They are complete now; the longest has 263,688 bytes.</li>
+<li>Formulae that the page does not show, for example in parameters of missing templates, are included.</li>
+<li>Math tags inside <code>&lt;nowiki&gt;</code>, <code>&lt;pre&gt;</code>, <code>&lt;source&gt;</code> and <code>&lt;syntaxhighlight&gt;</code> are not included.</li>
+</ul>
+
+<h2>Limitations</h2>
+<ul>
+<li>A math tag without a closing tag takes the rest of the page as its input, as in MediaWiki itself.</li>
+<li>Formulae that come from templates, or that are written without tags, for example with the <code>{{math}}</code> template, are missing.</li>
+<li>Private wikis have no public dumps and are not included.</li>
+</ul>

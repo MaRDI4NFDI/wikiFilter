@@ -1,3 +1,235 @@
+## 2026-10-13
+<details>
+<summary>indexed all inputs again with Gerrit change 1354086 (step 5)</summary>
+
+* 05:14 UTC: the screen session `full261013` ran `/tmp/full-261013.sh` with commit a66cde8 (`full-261013.log`).
+  On all 663 wikis, `mathlog` and `mathindex` were renamed to `mathlog_261009` and `mathindex_261009`, which keep the renderings of the run from 2026-10-09,
+  and recreated empty.
+  `UpdateMath --mode source` took 1,388 s for cawiki with 4 wikis in parallel; it was stopped after 181 wikis.
+* 06:44 UTC: `full261013b` (commit f18301a, binary hashes, one query per revision for the index and for the new inputs) took 862 s for cawiki alone.
+  The commits took 0.8 s; the rest was the chunk query of UpdateMath, which joined `slots` on `slot_origin`, a column without an index.
+* 07:01 UTC: `full261013c` (commit 1e6b7a0, `slots` joined on `slot_revision_id`) recreated `mathlog` and `mathindex` with `binary(16)` hashes:
+  * cawiki alone took 24 s for 167,140 formulae.
+  * 07:04–07:18 UTC: the other 662 wikis, 4 at a time; all 663 ended with `Updated`, the slowest was enwiki with 529 s.
+  * Checks (`full-261013c/check/`): mathindex has all 10,518,101 tags of the current revisions, with the expected hash and a `mathlog` row each.
+    `mathlog` has 5,748,142 inputs.
+  * 56 tags in 22 wikis have an id attribute longer than the 50 bytes of `mathindex_anchor`, so their anchor is cut off; enwiki has 11, such as URLs used as ids.
+  * 84 inputs of the check script come from JavaScript pages, which UpdateMath skips; without them, the five wikis checked again have none missing.
+* `mathperformance` keeps the hex hashes: its 89 million rows (16 GB) were not converted, as `/srv` has 5 GB free.
+  The `*_261009` tables take 14.8 GB.
+</details>
+
+<details>
+<summary>rebuilt mathindex of 22 wikis for ids over 50 bytes, cleaned up math26</summary>
+
+* 08:14–08:39 UTC: the screen session `anchors261013` deployed commit bd86998, where an id attribute longer than the 50 bytes of
+  `mathindex_anchor` is not used as anchor.
+  It emptied `mathindex` of the 22 wikis with such ids and ran `UpdateMath --mode source` there (`anchors-261013.log`).
+  All 22 wikis now have every tag with its expected anchor and hash.
+* Removed the scripts of the runs from 2026-10-09 to 2026-10-13 in `/tmp` of math26 and of `mediawiki-fpm`, and `~/update-261009.sh`.
+* Quit the idle screen sessions `check`, `import`, `filter` and `hashes` from September and 2026-10-03.
+* Not removed: the `*_261009` tables (14.8 GB), `mathperformance` (16 GB) and older files in `/tmp`; `/srv` has 5.8 GB free.
+  Watchtower is still stopped.
+</details>
+
+<details>
+<summary>dropped the old tables and the old rows of mathperformance, exported the inputs (step 5)</summary>
+
+* 14:25 UTC: the screen session `drop261013` dropped the 1,326 tables `mathlog_261009` and `mathindex_261009` (`drop-261013.log`).
+  `/srv` went from 5.8 GB to 24 GB free.
+  None of the 95,895,327 rows of `mathperformance` had a 16-byte hash, so all are deleted, wiki by wiki.
+  Each table is then optimized, and its hash column, like that of `mathobservation`, becomes `binary(16)`.
+* 14:52 UTC: the screen session `export261013` runs [exportDatasets.sh](exportDatasets.sh) of commit 4d3930b,
+  copied with `scp` to `/tmp/zenodo261013`, writing to `/data/project/wdump/datasets-261013` (`export-261013.log`).
+  The export of 2026-10-09 stays in `/data/project/wdump/datasets`.
+  It finished at 15:29 UTC with 4,176,901 inputs of all wikis and 676,371 of enwiki; 646 of 663 wikis have formulae.
+* 15:30 UTC: the screen session `final261013` validated the export, deployed commit 0b1e59b, where the hash leaves out the id,
+  and emptied `mathlog` and `mathindex` to rebuild them.
+* 15:32 UTC: the kernel killed `mariadbd` for lack of memory (8.6 GB resident), while both sessions ran SQL on all wikis.
+  `mathlog` and `mathindex` were empty in about 125 wikis, and 68,185,551 rows of `mathperformance` were left.
+  15:37 UTC: `docker compose up -d database`; InnoDB recovered and was ready at 15:38:58.
+* The dumps of 4 wikis were imported only in part, as the import stops at an unknown content model:
+  commonswiki (1 of 9,155 pages, `wikibase-mediainfo`), wikidatawiki (142 of 209, `wikibase-item`),
+  test2wiki (133 of 186) and sourceswiki (10 of 25, both `proofread-page`).
+  A scan of all dumps (`models-261013.tsv`) found `proofread-page` outside Wikisource only in these two.
+  srv-wmflabs-math26 commit fc8403d loads ProofreadPage for them; it is applied to the checkout on math26 by hand,
+  which is at 4303ccf, so `LocalSettings.php` has to be reset before the next `git pull`. `mediawiki-fpm` was restarted.
+* 15:41 UTC: the screen session `final2261013` runs one step after the other (`final2-261013.log`):
+  importDump again for sourceswiki and test2wiki, the rebuild with 0b1e59b, the checks, the export to `datasets-261013`,
+  its validation, and `TRUNCATE` of `mathperformance`, whose rows all have the old hashes.
+* The screen session `zenodo261013` got the token through stdin; it is only in its environment.
+  It waits for `final2261013`, stops if the run is not clean, writes the numbers into the descriptions,
+  discards the drafts 23267246 and 23267715 of 2026-10-09 and creates new drafts of 17838885, 14209690 and 15162182
+  (`zenodo-261013.log`, descriptions in `zenodo-261013/`).
+</details>
+
+## 2026-10-11
+<details>
+<summary>tested Gerrit change 1354086 on math26</summary>
+
+* 12:26 UTC: the screen session `test261011` ran `/tmp/test-261011.sh`, copied with `scp` together with `/tmp/ms-1354086.patch` (commit 1823531), logging to `/data/project/wdump/math/test-261011.log`:
+  * Backup in `/data/project/wdump/math/test-261011/`: `ms-before.diff` has the HEAD (634bbff), the diff and the untracked files of MathSearch in the container;
+    `<wiki>-before.sql.gz` dumps `mathlog` and `mathindex` of testwiki, hawiki and bewikisource.
+  * MathSearch in the container at master df4eda1 plus the patch; php-fpm reloaded.
+  * The checks failed, as `eval.php` reads its input line by line and `/usr/bin/time` is not installed.
+    So the three wikis were emptied without UpdateMath, and the script was stopped.
+    The `foreachwiki` of `DeleteOldRevisionsFromIndex` it had started kept running in the container until 12:31 UTC.
+* 12:28 UTC: the screen session `retest261011` ran `/tmp/retest-261011.sh` with the checks as maintenance scripts (`retest-261011.log`).
+  * Saving `T439313` on testwiki (the test page of the local wiki) indexed each revision with 16 rows, all with a `mathlog` row.
+    A page view wrote nothing; the ids on the page matched the local wiki.
+    `DeleteOldRevisionsFromIndex` deleted the 2 older revisions; deleting the page deleted the rest.
+  * UpdateMath after emptying `mathlog` and `mathindex`, compared with the math tags of the current revisions in any content model:
+
+| wiki | pages | tags | `mathindex` rows | missing | other hash | old revisions | without `mathlog` | `mathlog` rows | time |
+|---|---|---|---|---|---|---|---|---|---|
+| testwiki | 80 | 976 | 976 | 0 | 0 | 0 | 0 | 976 | 5 s |
+| hawiki | 98 | 640 | 640 | 0 | 0 | 0 | 0 | 640 | 3 s |
+| bewikisource | 251 | 7,023 | 7,023 | 0 | 0 | 0 | 0 | 5,332 | 25 s |
+
+  * `mathlog` has a row per tag rather than per input: testwiki has 784 distinct hashes, hawiki 480, bewikisource 4,396.
+    The full rerun has the same, e.g. 770,501 rows for 344,808 inputs in dewiki.
+    `isInDatabase()` does not see the inserts that `writeToCache()` defers, and the key on `math_inputhash, math_mode` is not unique.
+* `DeleteOldRevisionsFromIndex` joined `page` on `page_latest`, which has no index; it took minutes for cawiki.
+  Joined via `revision` it takes 0.4 s; the change was amended (f2d1248).
+* 12:33–12:35 UTC: the screen session `deleteold261011b` ran the amended script on all wikis (`test-261011/delete-old-3.log`):
+  663 wikis, none failed, none had old revisions.
+</details>
+<details>
+<summary>kept the search for math tags in the wikitext</summary>
+
+[Gerrit change 1354086](https://gerrit.wikimedia.org/r/c/mediawiki/extensions/MathSearch/+/1354086) indexes every math tag of a page's own wikitext when the revision is saved,
+so the statistics count formulae that a page does not render, such as those on `Page:` pages without ProofreadPage on math26.
+Finding the tags in the wikitext only approximates the parser:
+the parser leaves the content of every registered tag to its extension, which may parse it, as Cite does for `<ref>`.
+Recording the formulae during the parse, as TemplateData and GeoData record their data, would be exact,
+but would index only what renders.
+Then the dumps would need templates and modules (`wikiFilter.py --template`), and all steps would have to run again.
+The current dumps stay; the exact way, together with a single maintenance script in MathSearch for all steps, is [T440805](https://phabricator.wikimedia.org/T440805).
+The limits of the filter are now in the [README](README.md#3-filter-the-dumps-for-math).
+</details>
+
+## 2026-10-09
+<details>
+<summary>prepared math26 for the export of all inputs (step 5)</summary>
+
+Inputs longer than 65,535 bytes no longer fit into `mathlog.math_input`, which was a `TEXT` column.
+They were cut off, once inside a multibyte character in ruwiki, which made the JSON export invalid.
+[Gerrit change 1353889](https://gerrit.wikimedia.org/r/c/mediawiki/extensions/MathSearch/+/1353889) makes the column `MEDIUMTEXT`, as large as the text of a revision.
+
+* 14:37 UTC: stopped watchtower, so it does not recreate `mediawiki-fpm` during the runs:
+```bash
+sudo docker stop beta-watchtower-1
+```
+* 14:40 UTC: MathSearch in the container at [patch set 2 of Gerrit change 1353889](https://gerrit.wikimedia.org/r/c/mediawiki/extensions/MathSearch/+/1353889/2), replacing the patches applied by hand, which are all merged:
+```bash
+sudo docker exec mediawiki-fpm bash -c "cd /var/www/html/w/extensions/MathSearch && git fetch --depth 1 https://gerrit.wikimedia.org/r/mediawiki/extensions/MathSearch refs/changes/89/1353889/2 && git reset --hard FETCH_HEAD"
+```
+* From 14:44 UTC: `update.php` on all wikis, started over ssh from a local machine.
+  At 14:49:55 UTC a DELETE removed the 12 rows whose input had exactly 65,535 bytes:
+  banwiki, plwiki, testwiki, siwiki, enwiki, idwiki, ruwiki (2), metawiki, dewiki, enwikisource and enwiktionary.
+  It ran while `update.php` altered the same tables, which slowed both down.
+  UpdateMath does not rewrite existing rows, so the cut inputs had to be deleted to be stored again.
+* The local ssh session ended at enwiki, but foreachwiki kept running without output.
+  It was stopped after the ALTER of enwiki had finished at 14:58:35 UTC.
+  The `math26` entry of `~/.ssh/config` has `RequestTTY force`, so commands with piped input need `ssh -T`.
+* 15:15 UTC: replaced the core fix of the WANObjectCache stats with the non-test files of [patch set 10 of Gerrit change 1351365](https://gerrit.wikimedia.org/r/c/mediawiki/core/+/1351365/10), as 1350817 is abandoned.
+  `StatsFactory::newNull()` now uses `Wikimedia\Stats\NullStatsCache`.
+* 15:15:55 UTC: `update.php` on all wikis in the screen session `update`, with `~/update-261009.sh` copied with `scp`, logging to `/data/project/wdump/math/update-261009.log`.
+* 15:32 UTC: the screen session `datasets` waited for `update`, then ran `/tmp/datasets-261009.sh`, copied with `scp`, logging to `/data/project/wdump/math/datasets-261009.log`.
+  It ran UpdateMath on the revisions with a hash in `mathindex` but not in `mathlog`.
+  `update.php` had changed 518 wikis, none failed.
+* The query found far more revisions than deleted rows, for example 2 in banwiki, 90 in plwiki and 9,175 of 47,355 in enwiki.
+  At 15:52 UTC the session was stopped after banwiki, plwiki, testwiki and part of siwiki, which only stored the same formulae again.
+* 15:54:40 UTC: the screen session `datasets` runs `/tmp/datasets-261009b.sh`, logging to `/data/project/wdump/math/datasets-261009b.log`.
+  For each of the 11 wikis, `/tmp/longTags.php` lists the current revisions with a math tag of more than 65,000 bytes, for ruwiki the expected 2.
+  UpdateMath runs on these revisions, then `/tmp/exportDatasets.sh` exports step 5.
+  The three files were copied with `scp`; `exportDatasets.sh` is the version of the next commit, which stores the inputs in a `MEDIUMBLOB`.
+</details>
+
+<details>
+<summary>exported the inputs (step 5)</summary>
+
+`/tmp/datasets-261009b.sh` found one revision per wiki and two in ruwiki, and stored the 12 inputs again by 15:59:21 UTC.
+Each run of UpdateMath ended with `1 failed`: the inputs are the rest of a page after an unclosed tag, so the TeX check fails.
+All 12 are complete now:
+
+| wiki | bytes |
+|---|---|
+| banwiki | 114,566 |
+| plwiki | 94,866 |
+| testwiki | 114,878 |
+| siwiki | 105,240 |
+| enwiki | 162,713 |
+| idwiki | 102,409 |
+| ruwiki | 263,688 (the longest of two) |
+| metawiki | 71,958 |
+| dewiki | 165,069 |
+| enwikisource | 121,859 |
+| enwiktionary | 86,241 |
+
+The export ran from 16:01:32 to 16:15:11 UTC:
+
+| file | size | content | MD5 |
+|---|---|---|---|
+| `mathstat.csv` | 11 KB | 663 wikis, 590 with at least one math tag | `69fc56164c94a62c7690732937ed486f` |
+| `wmf_texvc_inputs.json` | 442 MB | 4,165,088 inputs | `71e898385ef71324ee04476068f966cf` |
+| `enwiki_texvc_inputs.json` | 70 MB | 676,297 inputs | `918ee525fa126ec961eefd58e6ebe716` |
+
+`/tmp/check-261009.sh`, copied with `scp`, checked them with `jq` in the screen session `check261009` (`/data/project/wdump/math/check-261009.log`):
+both JSON files parse, all keys are MD5 hashes, the longest input has 263,688 bytes (enwiki: 162,713), and `281a70c20b16a38d7781189936e1ac9f` maps to `E = mc^2`.
+</details>
+
+<details>
+<summary>uploaded drafts of the inputs to Zenodo (step 5)</summary>
+
+The descriptions and metadata are in [zenodo](zenodo), one directory per dataset; they were copied to `/tmp/zenodo261009` with `scp`.
+`/tmp/zenodo-261009.sh`, copied with `scp`, runs [zenodoUpload.sh](zenodoUpload.sh) for each record in the screen session `zenodo`.
+The token is read from standard input into the environment of the session, so it is in no file:
+```bash
+ssh -T math26 'read -r ZENODO_TOKEN; export ZENODO_TOKEN; screen -dmS zenodo bash -c "bash /tmp/zenodo-261009.sh > /data/project/wdump/math/zenodo-261009b.log 2>&1"'
+```
+* 16:18 UTC: the first attempt failed for all three records with `502 Bad Gateway` or `504 Gateway Time-out` from Zenodo; zenodoUpload.sh discarded the drafts 23267001, 23267022 and 23267047.
+* 16:27 UTC: the second attempt tries each record up to 8 times, 10 minutes apart (`/data/project/wdump/math/zenodo-261009b.log`).
+  Zenodo answered 410 for the concept records 17838884 and 15162181, so it was stopped.
+* 16:29 UTC: the third attempt uses the version records 17838885, 14209690 and 15162182 (`/data/project/wdump/math/zenodo-261009c.log`).
+  * 17:15 UTC: draft [23267246](https://zenodo.org/uploads/23267246) of the statistics, after five attempts.
+    Zenodo had answered the discard of attempt 2 with 504, so attempt 5 reused that draft.
+  * By 17:35:48 UTC: draft [23267715](https://zenodo.org/uploads/23267715) of the enwiki inputs, at the second attempt.
+  * All 8 uploads of `wmf_texvc_inputs.json` (442 MB) ended with `502 Bad Gateway`; at 21:33 UTC the session gave up.
+* The drafts are not published.
+</details>
+
+<details>
+<summary>found gaps between mathlog and mathindex</summary>
+
+`mathstat.csv` counts the rows of `mathindex`; 73 of 663 wikis had none, although every filtered dump has a math tag.
+Their formulae are in `mathlog`, but the hooks index only formulae that a page renders,
+for example not the tag in `Module:Convert` of acewiki or those on the `Page:` pages of bewikisource.
+In the other direction, 9,175 of 47,355 revisions of enwiki had a hash in `mathindex` without a row in `mathlog`:
+`MathObject::cloneFromRenderer()` hashed without the attributes of the tag, unlike Math.
+mathlog also had most inputs twice (1,389,090 rows for 676,297 inputs in enwiki), as the hooks and UpdateMath both insert.
+So the draft of the statistics must not be published.
+The inputs do not depend on this, as `exportDatasets.sh` hashes them again.
+
+The fixes, all for [T439313](https://phabricator.wikimedia.org/T439313):
+* [Gerrit change 1354086](https://gerrit.wikimedia.org/r/c/mediawiki/extensions/MathSearch/+/1354086): UpdateMath indexes every tag, with the hash of the renderer and unique anchors.
+* [Gerrit change 1354089](https://gerrit.wikimedia.org/r/c/mediawiki/extensions/MathSearch/+/1354089), merged: UpdateMath skipped the newest revision when a chunk started there, by default when its id was a multiple of 100.
+* [Gerrit change 1354091](https://gerrit.wikimedia.org/r/c/mediawiki/extensions/MathSearch/+/1354091): `mathlog.math_params` stores the attributes, for an export in the form of `reference.json`.
+</details>
+
+<details>
+<summary>started a full rerun of UpdateMath (step 5)</summary>
+
+* 21:44:59–21:47:19 UTC: the screen session `truncate` emptied `mathlog` and `mathindex` of all 663 wikis with `/tmp/truncate-261009.sh`, copied with `scp` (`/data/project/wdump/math/truncate-261009.log`).
+  Two minutes later enwiki had 129 rows again, written by the hooks for page views.
+* 21:49:33 UTC: the screen session `rerun` runs `/tmp/rerun-261009.sh` (`/data/project/wdump/math/rerun-261009.log`), copied with `scp` together with `/tmp/ms-combined-261009.patch`:
+  * MathSearch in the container at master [634bbff](https://gerrit.wikimedia.org/r/c/mediawiki/extensions/MathSearch/+/1354089), plus patch set 1 of 1354086 and 1354091,
+    combined in a local worktree, where both conflicted only in `cloneFromRenderer()` and the tests; the full suites passed on the combination.
+  * `update.php` on all wikis for `math_params`.
+  * `mathlog` and `mathindex` emptied again, as the page views had written rows with the old code.
+  * UpdateMath on all 663 wikis, 4 at a time, logging to `/data/project/wdump/math/updatemath-261009/`, with the available memory every 10 minutes in `memory.log`.
+</details>
+
 ## 2026-10-05
 <details>
 <summary>UpdateMath rerun finished</summary>
@@ -331,7 +563,7 @@ Uploaded with [zenodoUpload.sh](zenodoUpload.sh), copied to math26 with `scp` be
 ```bash
 cd ~/wikiFilter/wmcloud
 read -s ZENODO_TOKEN && export ZENODO_TOKEN
-./zenodoUpload.sh 15058128 zenodo/math.json zenodo/math.html /data/project/wdump/math.tar inputHashes.csv
+./zenodoUpload.sh 15058128 zenodo/15058128/metadata.json zenodo/15058128/description.html /data/project/wdump/math.tar inputHashes.csv
 ```
 
 * The first runs failed with a 500: the draft came in the legacy format, and the update was sent in the new one.
@@ -409,7 +641,7 @@ cd /srv/srv-wmflabs-math26 && sudo docker compose down --volumes
 * posted the status on [T439313](https://phabricator.wikimedia.org/T439313)
 
 ## 2026-10-01
-* prepared the Zenodo upload of step 3 with [zenodoUpload.sh](zenodoUpload.sh), [description](zenodo/math.html) and [MaRDI funding](zenodo/math.json)
+* prepared the Zenodo upload of step 3 with [zenodoUpload.sh](zenodoUpload.sh), [description](zenodo/15058128/description.html) and [MaRDI funding](zenodo/15058128/metadata.json)
 
 ## 2026-09-27
 * [deployed](https://archive.softwareheritage.org/swh:1:rev:977675d233be8a2d467b183a50b6feb5803338c9;origin=https://github.com/MaRDI4NFDI/srv-wmflabs-math26) math26 with a single script in 16 minutes
