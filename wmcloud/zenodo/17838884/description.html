@@ -1,5 +1,5 @@
 <p>Statistics on the use of math in Wikimedia projects, based on the pages with math tags of the dumps of 2026-09-01 (<a href="https://doi.org/10.5281/zenodo.23098003">10.5281/zenodo.23098003</a>).
-This version covers 663 wikis, 590 of them with at least one math tag.</p>
+This version covers 663 wikis, 646 of them with at least one math tag.</p>
 
 <h2>Columns of <code>mathstat.csv</code></h2>
 <ul>
@@ -14,5 +14,6 @@ This version covers 663 wikis, 590 of them with at least one math tag.</p>
 <li>Index the math tags of the current revisions in the table <code>mathindex</code> of each wiki with the maintenance script <code>UpdateMath</code>.</li>
 <li>Count them per wiki with <a href="https://github.com/MaRDI4NFDI/wikiFilter/blob/master/wmcloud/exportDatasets.sh">exportDatasets.sh</a>.</li>
 </ol>
+<p>Most pages of Commons and some of Wikidata are missing, as the import stops at the content models <code>wikibase-mediainfo</code> and <code>wikibase-item</code>, which the wiki on math26 does not support.</p>
 <p>Every run is recorded in the <a href="https://github.com/MaRDI4NFDI/wikiFilter/blob/master/wmcloud/Log.md">log</a>.
 The inputs of all formulae are in <a href="https://doi.org/10.5281/zenodo.15162181">10.5281/zenodo.15162181</a>.</p>

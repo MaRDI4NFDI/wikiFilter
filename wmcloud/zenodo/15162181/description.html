@@ -1,6 +1,6 @@
 <p>This dataset contains every distinct mathematical input of all Wikimedia projects, including the Wikipedias in all languages.
 <code>wmf_texvc_inputs.json</code> maps the MD5 hash of each input to the input.
-This version has 4,165,088 inputs.</p>
+This version has 4,176,968 inputs.</p>
 
 <h2>Context</h2>
 <p>Mathematical formulae on Wikimedia wikis are written in a TeX dialect inside <code>&lt;math&gt;</code> tags and rendered by the <a href="https://www.mediawiki.org/wiki/Extension:Math">Math extension</a> of MediaWiki.
@@ -39,6 +39,7 @@ The duplicates were deleted before the export, as <a href="https://archive.softw
 
 <h2>Limitations</h2>
 <ul>
+<li>Most pages of Commons and some of Wikidata are missing, as the import stops at the content models <code>wikibase-mediainfo</code> and <code>wikibase-item</code>, which the wiki on math26 does not support.</li>
 <li>A math tag without a closing tag takes the rest of the page as its input, as in MediaWiki itself.</li>
 <li>Formulae that come from templates, or that are written without tags, for example with the <code>{{math}}</code> template, are missing.</li>
 <li>Private wikis have no public dumps and are not included.</li>

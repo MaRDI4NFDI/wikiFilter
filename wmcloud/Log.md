@@ -1,3 +1,21 @@
+## 2026-10-14
+<details>
+<summary>started the MathML and SVG of all inputs from RESTBase (step 6)</summary>
+
+* 20:43 UTC: a trial of `UpdateMath --mode mathml --SVG` against the production RESTBase (`$wgMathFullRestbaseURL`, `https://wikimedia.org/api/rest_`) on testwiki
+  stopped at the first input that RESTBase rejected, as UpdateMath asked for its SVG anyway.
+  Gerrit change 1354086 (commit c4dc26e) counts a rendering without MathML as failed and asks for the SVG only after a successful rendering.
+* 20:47 UTC: the trial with c4dc26e took 63 s for 973 tags, about 80 ms per input; 770 inputs got MathML and SVG, 10 failed.
+  MathML has 1,488 bytes on average, SVG 6,994 bytes.
+* The requests carry the User-Agent `MediaWiki/1.47.0-wmf.21 (https://test.wiki.beta.math.wmflabs.org)`, with the URL of each wiki.
+* 21:27 UTC: copies of `testwiki.mathlog` took 47 % of the space with `ROW_FORMAT=COMPRESSED KEY_BLOCK_SIZE=8` and 32 % with `KEY_BLOCK_SIZE=4`
+  (`compress-261014.log`); uncompressed, all inputs would need about 49 GB, and `/srv` had 41 GB free.
+* 21:31 UTC: the screen session `restbase261014` (`restbase-261014-run.log`) set `mathlog` of all wikis to `ROW_FORMAT=COMPRESSED KEY_BLOCK_SIZE=8`
+  and runs `UpdateMath --mode mathml --SVG` on all wikis, 2 at a time, logging to `restbase-261014/`.
+  Every 5 minutes it logs the free space in `disk.log`, and it stops UpdateMath below 5 GB.
+* `docker image prune` removed the untagged images of `wikibase` and `apache-assets`, 2.86 GB; `/srv` then had 45 GB free.
+</details>
+
 ## 2026-10-13
 <details>
 <summary>indexed all inputs again with Gerrit change 1354086 (step 5)</summary>
@@ -61,6 +79,37 @@
   It waits for `final2261013`, stops if the run is not clean, writes the numbers into the descriptions,
   discards the drafts 23267246 and 23267715 of 2026-10-09 and creates new drafts of 17838885, 14209690 and 15162182
   (`zenodo-261013.log`, descriptions in `zenodo-261013/`).
+</details>
+<details>
+<summary>exported the inputs again and uploaded the drafts to Zenodo (step 5)</summary>
+
+* `final2261013` (`final2-261013.log`):
+  * importDump added the missing pages of sourceswiki (10 to 26) and test2wiki (133 to 187).
+  * 15:41–16:13 UTC: UpdateMath `--mode source` with commit 0b1e59b on all 663 wikis, all ended with `Updated`.
+  * The checks found all 10,518,347 tags of the current revisions in `mathindex`, each with the expected hash and a row in `mathlog`.
+  * 16:19–18:09 UTC: the export to `datasets-261013`; it took longer than at 14:52, as MariaDB has run with a buffer pool of 128 MB since the restart.
+
+| File | Content | SHA-256 |
+|---|---|---|
+| `mathstat.csv` | 663 wikis, 646 with formulae, 10,518,347 formulae on 511,334 pages | `5a5b8b90ec03d49567811a27372ca5d3c126cf0f035e3836931d4382c9358511` |
+| `wmf_texvc_inputs.json` | 4,176,968 inputs, the longest with 263,688 bytes | `b55321b61a8d618b7184971ff7dddc7487d715332f8672b99941144ee6dac430` |
+| `enwiki_texvc_inputs.json` | 676,371 inputs | `9e78d8af6c8b8f57e6250a96c31529589cf3f399f955677b42acd4d08c5f2971` |
+
+  * All keys of both JSON files are MD5 hashes.
+  * 18:10–18:17 UTC: `TRUNCATE` of `mathperformance` on all wikis, whose hash column, like that of `mathobservation`, is now `binary(16)`.
+    `/srv` has 41 GB free.
+* `zenodo261013` (`zenodo-261013.log`), from 18:17 UTC:
+  * The drafts 23267246 and 23267715 of 2026-10-09 were discarded (HTTP 204).
+  * The descriptions got the new numbers and a limitation on Commons and Wikidata; they are in [zenodo](zenodo).
+  * Zenodo answered uploads of the JSON files with `502 Bad Gateway` at times; the script discarded the draft each time and tried again 10 minutes later.
+
+| Record | File | Attempts | Draft |
+|---|---|---|---|
+| 17838885 | `mathstat.csv` | 1 | [23348689](https://zenodo.org/uploads/23348689) |
+| 14209690 | `enwiki_texvc_inputs.json` | 3 | [23349217](https://zenodo.org/uploads/23349217) |
+| 15162182 | `wmf_texvc_inputs.json` | 5 | [23350852](https://zenodo.org/uploads/23350852) |
+
+  * The session ended at 20:37 UTC, and with it the token.
 </details>
 
 ## 2026-10-11
