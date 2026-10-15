@@ -35,6 +35,24 @@
   An edit without the grant failed the same checks, so the grant stays.
 * Published [10.5281/zenodo.23394019](https://doi.org/10.5281/zenodo.23394019), the inputs of all wikis, as version 2 of 15162181.
   All three records have the expected MD5 sums; enwiki waits for the MaRDI4NFDI community to accept it.
+* 23394009 was not usable and was deleted (its DOI shows a tombstone).
+  The enwiki record holds the reference of EnWikiFormulaeTest in Math (T439313): `en-wiki-formulae-good.json`, the inputs that
+  WikiTexVC accepts, and `normalized.json`, its output for each of them, which `maintenance/downloadMoreTexVCtests.sh` downloads.
+  23394009 had only `enwiki_texvc_inputs.json`: all inputs, invalid ones included, and no normalized output,
+  so it did not refresh the reference with the fix of `\Omicron`, which was the point of T439313.
+* No script generates these two files, so step 5 could not produce them:
+  * Version 1 (record 7494266, 2022) came from `bin/batch-evaluate` in texvcjs (d455f60), which runs texvcjs, the JavaScript implementation.
+    It normalizes every input and expects `en-wiki-formulae-good.json` from the texvcjs repository, which held only valid inputs.
+  * Version 2 (14209690, 2024-11-23) holds the output of WikiTexVC, the PHP port in Math (Math commit c89f8ad1, T375274),
+    but the command that wrote it is not in Math, MathSearch, wikiFilter or texvcjs.
+  * `exportDatasets.sh` writes the inputs of enwiki only, modelled on the record of all inputs (15162181).
+* About 14:15 UTC: a request to stop a script was applied to the RESTBase run by mistake:
+  `STOP` was created and the UpdateMath processes were killed, which ended enwiki after 303 committed chunks.
+  While `STOP` existed, `xargs` skipped the 463 wikis not yet started, and `restbase261014` ran its final summary;
+  frwiki, frwikisource and frwikiversity kept running.
+* 14:19 UTC: the screen session `restbase261015` (`restbase-261015-run.log`) resumes the run, 3 wikis at a time,
+  with enwiki from rank 30300 (`enwiki-resume.log`) and every wiki without a log (`list2.txt`).
+  `rbwatch2` logs the free space in `disk.log` and stops UpdateMath below 5 GB.
 </details>
 
 ## 2026-10-14

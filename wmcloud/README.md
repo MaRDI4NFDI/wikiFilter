@@ -13,7 +13,7 @@ Past runs are in the [log](Log.md).
 | [10.5281/zenodo.15058128](https://doi.org/10.5281/zenodo.15058128) | Wikipedia articles with math tags (`math.tar`, `inputHashes.csv`) | 2, 3 |
 | [10.5281/zenodo.15162181](https://doi.org/10.5281/zenodo.15162181) | all math inputs (`wmf_texvc_inputs.json`) | 5 |
 | [10.5281/zenodo.17838884](https://doi.org/10.5281/zenodo.17838884) | statistics on math use (`mathstat.csv`) | 5 |
-| [10.5281/zenodo.14209690](https://doi.org/10.5281/zenodo.14209690) | math inputs of English Wikipedia (`enwiki_texvc_inputs.json`) | 5 |
+| [10.5281/zenodo.14209690](https://doi.org/10.5281/zenodo.14209690) | reference of EnWikiFormulaeTest from the math inputs of English Wikipedia (`en-wiki-formulae-good.json`, `normalized.json`) | 5 |
 | [10.5281/zenodo.15612155](https://doi.org/10.5281/zenodo.15612155) | MathML rendering of all inputs (`mathlog.csv`) | 6 |
 
 The description and the metadata of each dataset are in [zenodo](zenodo), in a directory named after the number in its DOI.
@@ -111,6 +111,14 @@ to `/data/project/wdump/datasets`:
 ```
 
 It collects the inputs of all wikis in the database `datasets`.
+
+From `enwiki_texvc_inputs.json`, MathSearch writes `en-wiki-formulae-good.json` and `normalized.json`,
+the reference of `EnWikiFormulaeTest` in Math: the inputs that WikiTexVC accepts, and its output for each of them.
+Run it with the Math version the test is meant for, usually master:
+
+```bash
+php maintenance/run.php MathSearch:NormalizeTexvc enwiki_texvc_inputs.json en-wiki-formulae-good.json normalized.json
+```
 
 ### 6. Render all inputs
 

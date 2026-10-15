@@ -1,7 +1,10 @@
-<p>This dataset contains every distinct mathematical input of the English Wikipedia.
-<code>enwiki_texvc_inputs.json</code> maps the MD5 hash of each input to the input.
-This version has 676,371 inputs.
-The inputs of all Wikimedia projects are in <a href="https://doi.org/10.5281/zenodo.15162181">10.5281/zenodo.15162181</a>.</p>
+<p>This dataset is the reference of <code>EnWikiFormulaeTest</code> in the Math extension.
+Both files map the MD5 hash of an input from the English Wikipedia to a string:</p>
+<ul>
+<li><code>en-wiki-formulae-good.json</code>: the 672,902 inputs that WikiTexVC accepts.</li>
+<li><code>normalized.json</code>: the TeX that WikiTexVC returns for each of them.</li>
+</ul>
+<p>The inputs of all Wikimedia projects are in <a href="https://doi.org/10.5281/zenodo.15162181">10.5281/zenodo.15162181</a>.</p>
 
 <p>The first version appeared as
 <a href="https://archive.softwareheritage.org/swh:1:cnt:da76ae5a988839894a2ecdab29a5ab7c8df7dc80;origin=https://github.com/wikimedia/mediawiki-services-texvcjs;visit=swh:1:snp:1ea38f5e961b25c6d0adde0145f64791eb8fb67d;anchor=swh:1:rev:101925e2ab1712c70472ed144efaea34743e6700;path=/test/en-wiki-formulae.json">test/en-wiki-formulae.json</a> in texvcjs.</p>
@@ -14,18 +17,17 @@ The inputs of all Wikimedia projects are in <a href="https://doi.org/10.5281/zen
 </ul>
 
 <h2>Pipeline</h2>
-<ol>
-<li>Keep the pages with math tags of the dump of 2026-09-01 (<a href="https://doi.org/10.5281/zenodo.23098003">10.5281/zenodo.23098003</a>).</li>
-<li>Import the filtered dump into a MediaWiki with the MathSearch extension.</li>
-<li>Store the input of every math tag of the current revisions in the table <code>mathlog</code> with the maintenance script <code>UpdateMath</code>.</li>
-<li>Export the inputs with <a href="https://archive.softwareheritage.org/swh:1:cnt:5045559df44156dc6c08dcbf63cf08091737c26e;origin=https://github.com/MaRDI4NFDI/wikiFilter;anchor=swh:1:rev:f4722ad8e12c306e4dbce23c2cfcc28734ae2faa;path=/wmcloud/exportDatasets.sh">exportDatasets.sh</a>.</li>
-</ol>
-<p>Every run is recorded in the <a href="https://archive.softwareheritage.org/swh:1:cnt:0458204747cf0fefd1c7d4887ad480af16998e01;origin=https://github.com/MaRDI4NFDI/wikiFilter;anchor=swh:1:rev:f4722ad8e12c306e4dbce23c2cfcc28734ae2faa;path=/wmcloud/Log.md">log</a>.</p>
+<p>The files come from the dump of 2026-09-01 (<a href="https://doi.org/10.5281/zenodo.23098003">10.5281/zenodo.23098003</a>),
+created with the pipeline described in the <a href="https://archive.softwareheritage.org/swh:1:cnt:229ac1c62ae2c7bb27ca3ff5ea43765ee653c0d1;origin=https://github.com/MaRDI4NFDI/wikiFilter;anchor=swh:1:rev:3407930730fd8f7b4eefcea9a21526134a7f5343;path=/wmcloud/README.md">README</a> of wikiFilter
+and the Math extension at commit 9e3bd130 of master.
+Every run is recorded in the <a href="https://archive.softwareheritage.org/swh:1:cnt:0458204747cf0fefd1c7d4887ad480af16998e01;origin=https://github.com/MaRDI4NFDI/wikiFilter;anchor=swh:1:rev:f4722ad8e12c306e4dbce23c2cfcc28734ae2faa;path=/wmcloud/Log.md">log</a>.</p>
 
 <h2>Changes</h2>
 <ul>
-<li>This version replaces <code>en-wiki-formulae-good.json</code> and <code>normalized.json</code> with the inputs of the dump of 2026-09-01.</li>
-<li>No input is cut off; the longest has 162,713 bytes.</li>
+<li>The inputs come from the dump of 2026-09-01 instead of the snapshot of 2014.
+140,187 of the 312,190 inputs of version 1.0.1 are still used, and their output is the same, except for <code>\Omicron</code>,
+which WikiTexVC now writes as <code>\mathrm {O}</code>.</li>
+<li>Inputs with a <code>display</code> attribute keep their wrapper (see Format), so their hashes differ from earlier versions.</li>
 </ul>
 
 <h2>Limitations</h2>
