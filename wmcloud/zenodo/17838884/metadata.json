@@ -11,6 +11,7 @@
   ],
   "related_identifiers": [
     {"identifier": "10.5281/zenodo.23098003", "scheme": "doi", "relation_type": {"id": "isderivedfrom"}, "resource_type": {"id": "dataset"}},
+    {"identifier": "swh:1:rev:f4722ad8e12c306e4dbce23c2cfcc28734ae2faa", "scheme": "other", "relation_type": {"id": "iscompiledby"}, "resource_type": {"id": "software"}},
     {"identifier": "https://github.com/MaRDI4NFDI/wikiFilter", "scheme": "url", "relation_type": {"id": "iscompiledby"}, "resource_type": {"id": "software"}},
     {"identifier": "https://phabricator.wikimedia.org/T439313", "scheme": "url", "relation_type": {"id": "isdocumentedby"}, "resource_type": {"id": "other"}}
   ]

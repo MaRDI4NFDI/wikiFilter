@@ -18,14 +18,14 @@ The inputs of all Wikimedia projects are in <a href="https://doi.org/10.5281/zen
 <li>Keep the pages with math tags of the dump of 2026-09-01 (<a href="https://doi.org/10.5281/zenodo.23098003">10.5281/zenodo.23098003</a>).</li>
 <li>Import the filtered dump into a MediaWiki with the MathSearch extension.</li>
 <li>Store the input of every math tag of the current revisions in the table <code>mathlog</code> with the maintenance script <code>UpdateMath</code>.</li>
-<li>Export the inputs with <a href="https://github.com/MaRDI4NFDI/wikiFilter/blob/master/wmcloud/exportDatasets.sh">exportDatasets.sh</a>.</li>
+<li>Export the inputs with <a href="https://archive.softwareheritage.org/swh:1:cnt:5045559df44156dc6c08dcbf63cf08091737c26e;origin=https://github.com/MaRDI4NFDI/wikiFilter;anchor=swh:1:rev:f4722ad8e12c306e4dbce23c2cfcc28734ae2faa;path=/wmcloud/exportDatasets.sh">exportDatasets.sh</a>.</li>
 </ol>
-<p>Every run is recorded in the <a href="https://github.com/MaRDI4NFDI/wikiFilter/blob/master/wmcloud/Log.md">log</a>.</p>
+<p>Every run is recorded in the <a href="https://archive.softwareheritage.org/swh:1:cnt:0458204747cf0fefd1c7d4887ad480af16998e01;origin=https://github.com/MaRDI4NFDI/wikiFilter;anchor=swh:1:rev:f4722ad8e12c306e4dbce23c2cfcc28734ae2faa;path=/wmcloud/Log.md">log</a>.</p>
 
 <h2>Changes</h2>
 <ul>
 <li>This version replaces <code>en-wiki-formulae-good.json</code> and <code>normalized.json</code> with the inputs of the dump of 2026-09-01.</li>
-<li>Inputs longer than 65,535 bytes are complete.</li>
+<li>No input is cut off; the longest has 162,713 bytes.</li>
 </ul>
 
 <h2>Limitations</h2>

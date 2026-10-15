@@ -1,3 +1,42 @@
+## 2026-10-15
+<details>
+<summary>RESTBase run (step 6) and the links of the drafts</summary>
+
+* 23:37 UTC on 2026-10-14: two `SIGUSR1` to the `xargs` of `restbase261014` raised it from 2 to 4 wikis at a time;
+  load stayed below 6 with about 65 % idle CPU, and RESTBase answered no request with 429.
+* 09:42 UTC: eswiki stopped at revision 5612 (Funcion_de_Bessel), as RESTBase answered an SVG request with "Cannot get svg. Server problem."
+  and storing the formula did not catch the error; a retry from rank 5600 stopped there again at 10:10 UTC.
+  Gerrit change 1355549 stores such a formula without SVG and keeps the error in `math_log`.
+* About 10:50 UTC: with 1355549 applied in the container, the screen session `eswikiretry` reruns eswiki from rank 5600;
+  all 9 formulae of revision 5612 got MathML and SVG, so the failure was temporary.
+* 11:10 UTC: the drafts [23348689](https://zenodo.org/uploads/23348689), [23349217](https://zenodo.org/uploads/23349217) and
+  [23350852](https://zenodo.org/uploads/23350852) link in their text to Software Heritage (revision `f4722ad`) instead of GitHub,
+  and name `swh:1:rev:f4722ad8e12c306e4dbce23c2cfcc28734ae2faa` (scheme `other`, as Zenodo rejects `swh`) next to the GitHub repository.
+* 11:17 UTC: the enwiki record (14209690) and the wmf record (15162182) left the communities FAIRCORE4EOSC and EU Open Research Repository,
+  as the project is over and they require its EC grant.
+  A request adds the enwiki record to the MaRDI4NFDI community; the wmf record stays in zbMATH Open and MaRDI4NFDI.
+* In draft 23349217, the given names of both authors had been stored as their affiliations;
+  they are now affiliated with FIZ Karlsruhe and the Wikimedia Foundation.
+* The MD5 sums of the files in the three drafts match `datasets-261013` on math26:
+  `mathstat.csv` `f2aa483b4beb3c6714066452eb30a72e`, `enwiki_texvc_inputs.json` `486583e318b50693d759dd1b91d2dbb2`,
+  `wmf_texvc_inputs.json` `059d118f2c1d2c67829581f426fe9f84`.
+* Published [10.5281/zenodo.23348689](https://doi.org/10.5281/zenodo.23348689), the statistics, as version 2 of 17838884.
+* The drafts 23349217 (enwiki) and 23350852 (wmf) could not be published, as Zenodo still checked them against FAIRCORE4EOSC and EU,
+  although neither record is in these communities any more; both drafts were discarded.
+  11:33 UTC: a new version 23393893 of 14209690 (screen session `zenodo261015`, `zenodo-261015/run.log`) got the same checks,
+  so it was discarded and the session stopped.
+  Zenodo keeps the check runs of a record after it leaves a community, and every new version and edit runs them again
+  (`invenio-checks`, `ChecksComponent.new_version`).
+* 11:39 UTC: the screen session `zenodo261015b` (`zenodo-261015/run2.log`) created the drafts again with the FAIRCORE4EOSC grant
+  (`00k4n6c32::101057264`) next to DFG/MaRDI, which passes both checks; the repository metadata stays without it.
+  Draft [23394009](https://zenodo.org/uploads/23394009) (enwiki, MD5 `486583e318b50693d759dd1b91d2dbb2`) and
+  draft [23394019](https://zenodo.org/uploads/23394019) (wmf, MD5 `059d118f2c1d2c67829581f426fe9f84`).
+* Published [10.5281/zenodo.23394009](https://doi.org/10.5281/zenodo.23394009), the enwiki inputs.
+  An edit without the grant failed the same checks, so the grant stays.
+* Published [10.5281/zenodo.23394019](https://doi.org/10.5281/zenodo.23394019), the inputs of all wikis, as version 2 of 15162181.
+  All three records have the expected MD5 sums; enwiki waits for the MaRDI4NFDI community to accept it.
+</details>
+
 ## 2026-10-14
 <details>
 <summary>started the MathML and SVG of all inputs from RESTBase (step 6)</summary>
@@ -13,6 +52,8 @@
 * 21:31 UTC: the screen session `restbase261014` (`restbase-261014-run.log`) set `mathlog` of all wikis to `ROW_FORMAT=COMPRESSED KEY_BLOCK_SIZE=8`
   and runs `UpdateMath --mode mathml --SVG` on all wikis, 2 at a time, logging to `restbase-261014/`.
   Every 5 minutes it logs the free space in `disk.log`, and it stops UpdateMath below 5 GB.
+* 21:57 UTC: the watcher wrote no time into `disk.log`, as the format of `date` was not quoted.
+  It was replaced by the screen session `rbwatch`, which does the same with the time and ends with `restbase261014`.
 * `docker image prune` removed the untagged images of `wikibase` and `apache-assets`, 2.86 GB; `/srv` then had 45 GB free.
 </details>
 

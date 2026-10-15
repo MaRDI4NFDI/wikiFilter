@@ -24,9 +24,9 @@ The refresh of this version is tracked in <a href="https://phabricator.wikimedia
 <li>Keep the pages with math tags of the dumps of 2026-09-01 (<a href="https://doi.org/10.5281/zenodo.23098003">10.5281/zenodo.23098003</a>).</li>
 <li>Import each filtered dump into its own MediaWiki with the MathSearch extension.</li>
 <li>Store the input of every math tag of the current revisions in the table <code>mathlog</code> of each wiki with the maintenance script <code>UpdateMath</code>.</li>
-<li>Merge the inputs of all wikis and export them with <a href="https://github.com/MaRDI4NFDI/wikiFilter/blob/master/wmcloud/exportDatasets.sh">exportDatasets.sh</a>.</li>
+<li>Merge the inputs of all wikis and export them with <a href="https://archive.softwareheritage.org/swh:1:cnt:5045559df44156dc6c08dcbf63cf08091737c26e;origin=https://github.com/MaRDI4NFDI/wikiFilter;anchor=swh:1:rev:f4722ad8e12c306e4dbce23c2cfcc28734ae2faa;path=/wmcloud/exportDatasets.sh">exportDatasets.sh</a>.</li>
 </ol>
-<p>Every run is recorded in the <a href="https://github.com/MaRDI4NFDI/wikiFilter/blob/master/wmcloud/Log.md">log</a>.
+<p>Every run is recorded in the <a href="https://archive.softwareheritage.org/swh:1:cnt:0458204747cf0fefd1c7d4887ad480af16998e01;origin=https://github.com/MaRDI4NFDI/wikiFilter;anchor=swh:1:rev:f4722ad8e12c306e4dbce23c2cfcc28734ae2faa;path=/wmcloud/Log.md">log</a>.
 The second import of all dumps duplicated 10 revisions in 3 wikis, because importDump compares the hash declared in the dump with a text that differs (<a href="https://phabricator.wikimedia.org/T440235">T440235</a>).
 The duplicates were deleted before the export, as <a href="https://archive.softwareheritage.org/swh:1:cnt:679b790e6cd5bcf92c53c1ed67a397326dbbd48c;origin=https://github.com/MaRDI4NFDI/wikiFilter;anchor=swh:1:rev:44e3a950047c9f921320c75baf95099ed0f6427d;path=/wmcloud/Log.md;lines=10-75">recorded in the log</a>.</p>
 
